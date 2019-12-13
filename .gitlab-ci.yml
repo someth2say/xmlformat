@@ -1,0 +1,9 @@
+
+image: registry.centos.org/centos:7 
+
+test_script:
+  tags:
+    - docker
+  script:
+    - ./test.sh
+
