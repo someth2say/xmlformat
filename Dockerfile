@@ -1,5 +1,6 @@
 # TODO consider a smaller image
-FROM registry.access.redhat.com/ubi8/ubi
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+#FROM registry.access.redhat.com/ubi8/python-36
 MAINTAINER Jordi Sola <jordisola@redhat.com>
 
 LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
@@ -25,7 +26,7 @@ ENV PATH=${SCRIPTS_DIR}:$PATH \
     XMLFORMAT_EXTRA_ARGS=${EXTRA_ARGS}
 
 # Install perl interpreter
-# RUN microdnf install -y --nodocs perl
+RUN microdnf install -y perl
 
 # Copy the root scripts to the scripts folder
 ADD scripts ${SCRIPTS_DIR}

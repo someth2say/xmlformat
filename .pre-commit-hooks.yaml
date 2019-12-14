@@ -1,10 +1,10 @@
 ---
 
-- id: gls-xmlformat
-  name: GLS XML Formatter
+- id: xmlformat
+  name: XML Formatter
   description: >
     Formats XML files according GLS formating rules
-  entry: localhost/xmlformat 
+  entry: quay.io/someth2say/xmlformat:0.1 
   language: docker_image
   require_serial: true
   
