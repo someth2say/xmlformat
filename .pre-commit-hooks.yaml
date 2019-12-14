@@ -4,8 +4,7 @@
   name: GLS XML Formatter
   description: >
     Formats XML files according GLS formating rules
-  entry: gls-xmlformat.sh
-  language: script
-  types: [text]
-
-
+  entry: localhost/xmlformat 
+  language: docker_image
+  require_serial: true
+  
