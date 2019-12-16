@@ -1,6 +1,4 @@
-# TODO consider a smaller image
-FROM registry.access.redhat.com/ubi8/ubi-minimal
-#FROM registry.access.redhat.com/ubi8/python-36
+FROM registry.access.redhat.com/ubi8/ubi-minimal as perl
 MAINTAINER Jordi Sola <jordisola@redhat.com>
 
 LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
@@ -14,6 +12,13 @@ LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
       io.k8s.display-name="XMLFormat" \
       io.openshift.tags="xml format perl" 
 
+# Install perl interpreter
+RUN microdnf install -y perl
+
+###
+
+FROM perl
+
 # Docker arguments to facilitate image extension
 ARG SCRIPTS_DIR="/xmlformat" 
 ARG EXTRA_ARGS="-i"
@@ -24,9 +29,6 @@ ENV PATH=${SCRIPTS_DIR}:$PATH \
     XMLFORMAT_CFG_FILE=${CFG_FILE} \
     XMLFORMAT_SCRIPTS_DIR=${SCRIPTS_DIR} \
     XMLFORMAT_EXTRA_ARGS=${EXTRA_ARGS}
-
-# Install perl interpreter
-RUN microdnf install -y perl
 
 # Copy the root scripts to the scripts folder
 ADD scripts ${SCRIPTS_DIR}
