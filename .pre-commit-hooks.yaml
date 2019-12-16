@@ -5,6 +5,7 @@
   description: >
     Formats XML files according GLS formating rules
   entry: quay.io/someth2say/xmlformat:0.1 
+  types: [xml]
   language: docker_image
   require_serial: true
   
