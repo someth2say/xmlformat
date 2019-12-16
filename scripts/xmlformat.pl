@@ -614,7 +614,7 @@ my $self = shift;
 sub process_doc
 {
 my $self = shift;
-my ($doc, $verbose, $check_parser, $canonize_only, $show_unconf_elts) = @_;
+my ($doc, $verbose, $check_parser, $canonize_only, $show_unconf_elts, $indent) = @_;
 my $str;
 
   $self->init_doc_vars ();
@@ -667,7 +667,7 @@ my $str;
 
   # Canonize tree to remove extraneous whitespace
   warn "Canonizing document tree...\n" if $verbose;
-  $self->tree_canonize ();
+  $self->tree_canonize ($indent);
 
   if ($canonize_only)
   {
@@ -1010,8 +1010,9 @@ my $str = "";
 sub tree_canonize
 {
 my $self = shift;
+my $indent = shift;
 
-  $self->{tree} = $self->tree_canonize2 ($self->{tree}, "*DOCUMENT");
+  $self->{tree} = $self->tree_canonize2 ($self->{tree}, "*DOCUMENT", $indent);
 }
 
 
@@ -1020,6 +1021,7 @@ sub tree_canonize2
 my $self = shift;
 my $children = shift;
 my $par_name = shift;
+my $indent = shift;
 
   # Formatting options for parent
   my $par_opts = $self->get_opts ($par_name);
@@ -1050,7 +1052,7 @@ my $par_name = shift;
       if ($self->get_opts ($child->{name})->{format} ne "verbatim")
       {
         $child->{content} = $self->tree_canonize2 ($child->{content},
-                            $child->{name});
+                            $child->{name}, $indent+$par_opts->{"subindent"});
       }
     }
     elsif ($child->{type} eq "text")
@@ -1092,6 +1094,9 @@ my $par_name = shift;
         $child->{content} =~ s/ $//
           if (!defined ($next_child) && $par_opts->{format} eq "block")
             || $self->non_normalized_node ($next_child);
+
+        my $indent_str = (" " x ( $indent+$par_opts->{"subindent"}));
+        $child->{content} =~ s/([.?]) \s*/$1 \n$indent_str/g;
 
         # If resulting text is empty, discard the node.
         next if $child->{content} =~ /^$/;
@@ -1697,7 +1702,7 @@ if (@ARGV == 0)
   }
 
   $out_doc = $xf->process_doc ($in_doc,
-              $verbose, $check_parser, $canonize_only, $show_unconf_elts);
+              $verbose, $check_parser, $canonize_only, $show_unconf_elts, 0);
   if (defined ($out_doc))
   {
     warn "Writing output document...\n" if $verbose;
@@ -1717,7 +1722,7 @@ else
     }
     close (IN);
     $out_doc = $xf->process_doc ($in_doc,
-                $verbose, $check_parser, $canonize_only, $show_unconf_elts);
+                $verbose, $check_parser, $canonize_only, $show_unconf_elts, 0);
     next unless defined ($out_doc);
     if (defined ($in_place))
     {
