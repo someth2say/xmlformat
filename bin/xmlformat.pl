@@ -1095,8 +1095,12 @@ my $indent = shift;
           if (!defined ($next_child) && $par_opts->{format} eq "block")
             || $self->non_normalized_node ($next_child);
 
+        # After whitespace normalization, split the text into sentences
+        # This is done by a simple regexp replacement, 
+        # looking for period and interrogation symbols and adding a break after them.
+        # Note also that the split should also be indented correctly after the break.
         my $indent_str = (" " x ( $indent+$par_opts->{"subindent"}));
-        $child->{content} =~ s/([.?]) \s*/$1 \n$indent_str/g;
+        $child->{content} =~ s/([.?]) \s*/$1\n$indent_str/g;
 
         # If resulting text is empty, discard the node.
         next if $child->{content} =~ /^$/;
@@ -1655,7 +1659,7 @@ my $xf = XMLFormat->new ();
 # are used. (These are set up in new().)
 
 my $env_conf_file = $ENV{XMLFORMAT_CONF};
-my $def_conf_file = "./xmlformat.conf";
+my $def_conf_file = "./xmlformat.conf"; 
 
 # If no config file was named, but XMLFORMAT_CONF is set, use its value
 # as the config file name.

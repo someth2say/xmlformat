@@ -1,11 +1,40 @@
 ---
-
-- id: xmlformat
-  name: XML Formatter
+- id: xmlformat_docker_perl
+  name: XML Formatter (perl bash docker)
   description: >
     Formats XML files according GLS formating rules
-  entry: quay.io/someth2say/xmlformat:0.1 
+  entry: quay.io/someth2say/xmlformat:0.2 
   types: [xml]
   language: docker_image
   require_serial: true
-  
+
+- id: xmlformat_ruby
+  name: XML Formatter (ruby)
+  description: >
+    Formats XML files according GLS formating rules
+  entry: xmlformat.rb
+  #args: ["-i","--config-file","xmlformat.conf"]
+  args: ["-i"]
+  language: ruby
+  require_serial: true
+
+- id: xmlformat_bash_ruby
+  name: XML Formatter (ruby bash)
+  description: >
+    Formats XML files according GLS formating rules
+  entry: bin/xmlformat.sh
+  args: ["-l","rb"]
+  types: [xml]
+  language: script
+  require_serial: true
+
+- id: xmlformat_bash_perl
+  name: XML Formatter (perl bash)
+  description: >
+    Formats XML files according GLS formating rules
+  entry: bin/xmlformat.sh
+  args: ["-l","pl"]
+  types: [xml]
+  language: script
+  require_serial: true
+
