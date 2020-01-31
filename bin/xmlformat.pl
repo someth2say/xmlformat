@@ -122,6 +122,9 @@ my $MarkupSPE =
 "<(?:!(?:$DeclCE)?|\\?(?:$PI_CE)?|/(?:$EndTagCE)?|(?:$ElemTagCE)?)";
 my $XML_SPE = "$TextSE|$MarkupSPE";
 
+#
+my $SentenceEnd = "[\.\?]\"?";
+
 # ----------------------------------------------------------------------
 
 # Allowable options and their possible values:
@@ -1100,7 +1103,7 @@ my $indent = shift;
         # looking for period and interrogation symbols and adding a break after them.
         # Note also that the split should also be indented correctly after the break.
         my $indent_str = (" " x ( $indent+$par_opts->{"subindent"}));
-        $child->{content} =~ s/([.?]) \s*/$1\n$indent_str/g;
+        $child->{content} =~ s/($SentenceEnd)\s+/$1\n$indent_str/g;
 
         # If resulting text is empty, discard the node.
         next if $child->{content} =~ /^$/;
@@ -1603,17 +1606,17 @@ GetOptions (
   # =i means an integer argument is required after the option
   # =s means a string argument is required after the option
   # :s means a string argument is optional after the option
-  "help|h"           => \$help,          # print help message
-  "backup|b=s"       => \$backup_suffix, # make backup using suffix
-  "canonized-output" => \$canonize_only, # print canonized document
-  "check-parser"     => \$check_parser,  # verify parser integrity
-  "config-file|f=s"  => \$conf_file,     # config file
-  "in-place|i"       => \$in_place,      # format in place
-  "show-config"      => \$show_conf,     # show configuration file
+  "help|h"                       => \$help,          # print help message
+  "backup|b=s"                   => \$backup_suffix, # make backup using suffix
+  "canonized-output|o"           => \$canonize_only, # print canonized document
+  "check-parser|p"               => \$check_parser,  # verify parser integrity
+  "config-file|f=s"              => \$conf_file,     # config file
+  "in-place|i"                   => \$in_place,      # format in place
+  "show-config|s"                => \$show_conf,     # show configuration file
   # need better name
-  "show-unconfigured-elements" => \$show_unconf_elts,   # show unconfigured elements
-  "verbose|v"        => \$verbose,       # be verbose
-  "version|V"        => \$show_version,  # show version info
+  "show-unconfigured-elements|u" => \$show_unconf_elts,   # show unconfigured elements
+  "verbose|v"                    => \$verbose,       # be verbose
+  "version|V"                    => \$show_version,  # show version info
 ) or do { print "$usage\n"; exit (1); };
 
 if (defined ($help))

@@ -16,7 +16,7 @@ RUN microdnf install -y perl ruby
 
 FROM ubi8-perl-ruby
 LABEL name="XMLFormat" \
-      version="0.2-SNAPSHOT" \
+      version="0.3-SNAPSHOT" \
       description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
       summary="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
       io.k8s.description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
@@ -33,7 +33,7 @@ ARG SCRIPT_LANG="pl"
 ENV PATH=${SCRIPTS_DIR}:$PATH \
     XMLFORMAT_LANG=${SCRIPT_LANG} \
     XMLFORMAT_CONF=${CFG_FILE} \
-    XMLFORMAT_EXTRA_ARGS=${EXTRA_ARGS}
+    XMLFORMAT_ARGS=${EXTRA_ARGS}
 
 # Copy the root scripts to the scripts folder
 ADD bin ${SCRIPTS_DIR}

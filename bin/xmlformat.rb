@@ -99,6 +99,8 @@ end
 "<(?:!(?:#{@@decl_ce})?|\\?(?:#{@@pi_ce})?|/(?:#{@@end_tag_ce})?|(?:#{@@elem_tag_se})?)"
 @@xml_spe = Regexp.new("#{@@text_se}|#{@@markup_spe}")
 
+#
+@@sentence_end = "[.?]\"?"
 # ----------------------------------------------------------------------
 
 # Allowable formatting options and their possible values:
@@ -482,7 +484,7 @@ class XMLFormatter
       puts "The document contains no unconfigured elements."
     else
       puts "The following document elements were assigned no formatting options:"
-      puts line_wrap(elts.sort.join(" "), 0, 0, 65).join("\n")
+      puts line_wrap([elts.sort.join(" ")], 0, 0, 65).join("\n")
     end
 
     elts.each do |elt_name|
@@ -945,7 +947,7 @@ class XMLFormatter
           # looking for period and interrogation symbols and adding a break after them.
           # Note also that the split should also be indented correctly after the break.
           indent_str = (" " * (indent+par_opts["subindent"]));
-          child["content"].gsub!(/([.?]) \s*/,'\1'+"\n"+indent_str)
+          child["content"].gsub!(/(#{@@sentence_end})\s+/,'\1'+"\n"+indent_str)
 
           # If resulting text is empty, discard the node.
           next if child["content"] =~ /\A\Z/
@@ -1391,24 +1393,22 @@ backup_suffix = nil
 conf_file = nil
 canonize_only = false
 check_parser = false
-in_place = false
-show_conf = false
-show_unconf_elts = false
+in_place = falsel
 show_version = false
 verbose = false
 
 opts = GetoptLong.new(
-  [ "--help",        "-h",    GetoptLong::NO_ARGUMENT ],
-  [ "--backup", "-b",         GetoptLong::REQUIRED_ARGUMENT ],
-  [ "--canonized-output",     GetoptLong::NO_ARGUMENT ],
-  [ "--check-parser",         GetoptLong::NO_ARGUMENT ],
-  [ "--config-file", "-f",    GetoptLong::REQUIRED_ARGUMENT ],
-  [ "--in-place", "-i",       GetoptLong::NO_ARGUMENT ],
-  [ "--show-config",          GetoptLong::NO_ARGUMENT ],
+  [ "--help",                       "-h", GetoptLong::NO_ARGUMENT ],
+  [ "--backup",                     "-b", GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--canonized-output",           "-o", GetoptLong::NO_ARGUMENT ],
+  [ "--check-parser",               "-p", GetoptLong::NO_ARGUMENT ],
+  [ "--config-file",                "-f", GetoptLong::REQUIRED_ARGUMENT ],
+  [ "--in-place",                   "-i", GetoptLong::NO_ARGUMENT ],
+  [ "--show-config",                "-s", GetoptLong::NO_ARGUMENT ],
   # need better name
-  [ "--show-unconfigured-elements",          GetoptLong::NO_ARGUMENT ],
-  [ "--verbose", "-v",        GetoptLong::NO_ARGUMENT ],
-  [ "--version", "-V",        GetoptLong::NO_ARGUMENT ]
+  [ "--show-unconfigured-elements", "-u", GetoptLong::NO_ARGUMENT ],
+  [ "--verbose",                    "-v", GetoptLong::NO_ARGUMENT ],
+  [ "--version",                    "-V", GetoptLong::NO_ARGUMENT ]
 )
 
 opts.each do |opt, arg|
@@ -1463,7 +1463,7 @@ if backup_suffix
 end
 
 # Save input filenames
-in_file = ARGV.dup
+#in_file = ARGV.dup
 
 xf = XMLFormatter.new
 
