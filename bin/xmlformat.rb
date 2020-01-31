@@ -1393,7 +1393,9 @@ backup_suffix = nil
 conf_file = nil
 canonize_only = false
 check_parser = false
-in_place = falsel
+in_place = false
+show_conf = false
+show_unconf_elts = false
 show_version = false
 verbose = false
 
@@ -1522,7 +1524,7 @@ else
   ARGV.each do |file|
     warn "Reading document #{file}...\n" if verbose
     in_doc = ""
-    File.open(file) do |fh|
+    File.open(file, :encoding => 'utf-8') do |fh|
       fh.each_line do |line|
         in_doc << line
       end

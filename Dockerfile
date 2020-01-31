@@ -27,11 +27,9 @@ LABEL name="XMLFormat" \
 ARG SCRIPTS_DIR="/bin" 
 ARG EXTRA_ARGS=""
 ARG CFG_FILE="${SCRIPTS_DIR}/xmlformat.conf" 
-ARG SCRIPT_LANG="pl"
 
 # Environment to be used by the xmlformat.sh script
 ENV PATH=${SCRIPTS_DIR}:$PATH \
-    XMLFORMAT_LANG=${SCRIPT_LANG} \
     XMLFORMAT_CONF=${CFG_FILE} \
     XMLFORMAT_ARGS=${EXTRA_ARGS}
 
@@ -42,4 +40,4 @@ ADD bin ${SCRIPTS_DIR}
 RUN chgrp -R 0 ${SCRIPTS_DIR} && \
     chmod -R g=u ${SCRIPTS_DIR}
 
-ENTRYPOINT [ "xmlformat.sh" ]
+ENTRYPOINT [ "xmlformat_rb.sh" ]
