@@ -1540,7 +1540,6 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
     {
       if(substr($prev_word,-1) =~ /[\.\?\!]/ and substr($word,0,1) =~ /^[[:upper:]]/)
       {
-        warn "Breaking line for sentence.";
         # Begin new line when a new sentence is discovered.
         push (@lines, $line);
         $line = " " x $indent . $word;
