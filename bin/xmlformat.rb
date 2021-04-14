@@ -12,7 +12,7 @@
 # which you should have received as part of this distribution.
 
 # Differences from Perl version:
-# - Pattern for   wrap-length = 0classifying token as text node is different.
+# - Pattern for classifying token as text node is different.
 #   (cannot use !~ op for case)
 # - It's important to use \A and \z|\Z rather than ^ and $ in pattern
 #   matches on tokens, because ^ and $ might match after/before a
