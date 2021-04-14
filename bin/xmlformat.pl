@@ -137,7 +137,7 @@ my %opt_list = (
   "format"    => [ "block", "inline", "verbatim" ],
   "normalize"   => [ "yes", "no" ],
   "subindent"   => undef,
-  "wrap-type"   => [ "length", "sentence" ],
+  "wrap-type"   => [ "length", "sentence", "none" ],
   "wrap-length" => undef,
   "entry-break" => undef,
   "exit-break"  => undef,
@@ -560,6 +560,7 @@ my $format_opts = {
               "exit-break",
               "subindent",
               "normalize",
+              "wrap-type",
               "wrap-length"
               ],
   "inline" => [ ],
@@ -1409,7 +1410,7 @@ my ($self, $indent) = @_;
     my $wrap_len = $self->block_wrap_length ();
     my $wrap_type = $self->block_wrap_type ();
     my $break_value = $self->block_break_value ();
-    if ($wrap_len <= 0)
+    if ($wrap_len <= 0 && $wrap_type eq "length" )
     {
       $s .= " " x $indent if $break_value > 0;
       $s .= join ("", @{$self->{pending}});
@@ -1450,12 +1451,13 @@ my ($self, $indent) = @_;
 # $first_indent - indent for first line
 # $rest_indent - indent for any remaining lines
 # $max_len - maximum length of output lines (including indent)
-
+# $wrap_type - Choice between line wrap types: by sentence or by length
 sub line_wrap
 {
 my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
 
   # First, tokenize the strings
+
   my @words = ();
   foreach my $str (@{$strs})
   {
@@ -1538,6 +1540,7 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
     {
       if(substr($prev_word,-1) =~ /[\.\?\!]/ and substr($word,0,1) =~ /^[[:upper:]]/)
       {
+        warn "Breaking line for sentence.";
         # Begin new line when a new sentence is discovered.
         push (@lines, $line);
         $line = " " x $indent . $word;
@@ -1548,7 +1551,6 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
       }
       $prev_word = $word;
     }
-
     # add word to current line with saved whitespace between
     $line .= $white . $word;
     $llen += length ($white) + $wlen;
