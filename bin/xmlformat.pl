@@ -122,9 +122,6 @@ my $MarkupSPE =
 "<(?:!(?:$DeclCE)?|\\?(?:$PI_CE)?|/(?:$EndTagCE)?|(?:$ElemTagCE)?)";
 my $XML_SPE = "$TextSE|$MarkupSPE";
 
-#
-my $SentenceEnd = "[\.\?]\"?";
-
 # ----------------------------------------------------------------------
 
 # Allowable options and their possible values:
@@ -140,6 +137,7 @@ my %opt_list = (
   "format"    => [ "block", "inline", "verbatim" ],
   "normalize"   => [ "yes", "no" ],
   "subindent"   => undef,
+  "wrap-type"   => [ "length", "sentence", "none" ],
   "wrap-length" => undef,
   "entry-break" => undef,
   "exit-break"  => undef,
@@ -176,6 +174,7 @@ my $type = shift;
     "format"    => "block",
     "normalize"   => "no",
     "subindent"   => 0,
+    "wrap-type" => "sentence",
     "wrap-length" => 0,
     "entry-break" => 0, # do not change
     "exit-break"  => 1, # do not change
@@ -189,6 +188,7 @@ my $type = shift;
     "format"    => "block",
     "normalize"   => "no",
     "subindent"   => 1,
+    "wrap-type" => "sentence",
     "wrap-length" => 0,
     "entry-break" => 1,
     "exit-break"  => 1,
@@ -362,6 +362,14 @@ my $self = shift;
   my $size = @{$self->{block_opts_stack}};
   my $opts = $self->{block_opts_stack}->[$size-1];
   return $opts->{"wrap-length"};
+}
+sub block_wrap_type
+{
+my $self = shift;
+
+  my $size = @{$self->{block_opts_stack}};
+  my $opts = $self->{block_opts_stack}->[$size-1];
+  return $opts->{"wrap-type"};
 }
 
 # Set the current block's break type, or return the number of newlines
@@ -552,6 +560,7 @@ my $format_opts = {
               "exit-break",
               "subindent",
               "normalize",
+              "wrap-type",
               "wrap-length"
               ],
   "inline" => [ ],
@@ -1098,13 +1107,6 @@ my $indent = shift;
           if (!defined ($next_child) && $par_opts->{format} eq "block")
             || $self->non_normalized_node ($next_child);
 
-        # After whitespace normalization, split the text into sentences
-        # This is done by a simple regexp replacement, 
-        # looking for period and interrogation symbols and adding a break after them.
-        # Note also that the split should also be indented correctly after the break.
-        my $indent_str = (" " x ( $indent+$par_opts->{"subindent"}));
-        $child->{content} =~ s/($SentenceEnd)\s+/$1\n$indent_str/g;
-
         # If resulting text is empty, discard the node.
         next if $child->{content} =~ /^$/;
       }
@@ -1406,8 +1408,9 @@ my ($self, $indent) = @_;
   {
     $self->emit_break (0);
     my $wrap_len = $self->block_wrap_length ();
+    my $wrap_type = $self->block_wrap_type ();
     my $break_value = $self->block_break_value ();
-    if ($wrap_len <= 0)
+    if ($wrap_len <= 0 && $wrap_type eq "length" )
     {
       $s .= " " x $indent if $break_value > 0;
       $s .= join ("", @{$self->{pending}});
@@ -1419,6 +1422,7 @@ my ($self, $indent) = @_;
       my @lines = $self->line_wrap ($self->{pending},
                   $first_indent,
                   $indent,
+                  $wrap_type,
                   $wrap_len);
       $s .= join ("\n", @lines);
     }
@@ -1447,10 +1451,10 @@ my ($self, $indent) = @_;
 # $first_indent - indent for first line
 # $rest_indent - indent for any remaining lines
 # $max_len - maximum length of output lines (including indent)
-
+# $wrap_type - Choice between line wrap types: by sentence or by length
 sub line_wrap
 {
-my ($self, $strs, $first_indent, $rest_indent, $max_len) = @_;
+my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
 
   # First, tokenize the strings
 
@@ -1498,6 +1502,7 @@ my ($self, $strs, $first_indent, $rest_indent, $max_len) = @_;
   my $indent = $first_indent;
   # saved-up whitespace to put before next non-white word
   my $white = "";
+  my $prev_word = "";
 
   foreach my $word (@words2)   # ... while words remain to wrap
   {
@@ -1505,7 +1510,7 @@ my ($self, $strs, $first_indent, $rest_indent, $max_len) = @_;
     # word if no line-break occurs.
     if ($word =~ /^\s/)
     {
-       $white .= $word;
+      $white .= $word;
       next;
     }
     my $wlen = length ($word);
@@ -1519,7 +1524,7 @@ my ($self, $strs, $first_indent, $rest_indent, $max_len) = @_;
       $white = "";
       next;
     }
-    if ($llen + length ($white) + $wlen > $max_len)
+    if( $wrap_type eq "length" and ($llen + length ($white) + $wlen > $max_len))
     {
       # Word (plus saved whitespace) won't fit on current line.
       # Begin new line (discard any saved whitespace).
@@ -1529,6 +1534,21 @@ my ($self, $strs, $first_indent, $rest_indent, $max_len) = @_;
       $indent = $rest_indent;
       $white = "";
       next;
+    }
+
+    if($wrap_type eq "sentence")
+    {
+      if(substr($prev_word,-1) =~ /[\.\?\!]/ and substr($word,0,1) =~ /^[[:upper:]]/)
+      {
+        # Begin new line when a new sentence is discovered.
+        push (@lines, $line);
+        $line = " " x $indent . $word;
+        $llen = $indent + $wlen;
+        $indent = $rest_indent;
+        $white = "";
+        next;
+      }
+      $prev_word = $word;
     }
     # add word to current line with saved whitespace between
     $line .= $white . $word;
@@ -1662,7 +1682,7 @@ my $xf = XMLFormat->new ();
 # are used. (These are set up in new().)
 
 my $env_conf_file = $ENV{XMLFORMAT_CONF};
-my $def_conf_file = "./xmlformat.conf"; 
+my $def_conf_file = "./xmlformat.conf";
 
 # If no config file was named, but XMLFORMAT_CONF is set, use its value
 # as the config file name.

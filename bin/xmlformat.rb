@@ -99,8 +99,6 @@ end
 "<(?:!(?:#{@@decl_ce})?|\\?(?:#{@@pi_ce})?|/(?:#{@@end_tag_ce})?|(?:#{@@elem_tag_se})?)"
 @@xml_spe = Regexp.new("#{@@text_se}|#{@@markup_spe}")
 
-#
-@@sentence_end = "[.?]\"?"
 # ----------------------------------------------------------------------
 
 # Allowable formatting options and their possible values:
@@ -117,6 +115,7 @@ end
   "normalize"     => [ "yes", "no" ],
   "subindent"     => nil,
   "wrap-length"   => nil,
+  "wrap-type"     => [ "length", "sentence", "none" ],
   "entry-break"   => nil,
   "exit-break"    => nil,
   "element-break" => nil
@@ -151,6 +150,7 @@ class XMLFormatter
       "normalize"     => "no",
       "subindent"     => 0,
       "wrap-length"   => 0,
+      "wrap-type"     => "sentence",
       "entry-break"   => 0, # do not change
       "exit-break"    => 1, # do not change
       "element-break" => 1
@@ -164,6 +164,7 @@ class XMLFormatter
       "normalize"     => "no",
       "subindent"     => 1,
       "wrap-length"   => 0,
+      "wrap-type"     => "sentence",
       "entry-break"   => 1,
       "exit-break"    => 1,
       "element-break" => 1
@@ -294,6 +295,10 @@ class XMLFormatter
 
   def block_wrap_length
     return @block_opts_stack.last["wrap-length"]
+  end
+
+  def block_wrap_type
+    return @block_opts_stack.last["wrap-type"]
   end
 
   # Set the current block's break type, or return the number of newlines
@@ -942,13 +947,6 @@ class XMLFormatter
             child["content"].sub!(/ \Z/, "")
           end
 
-          # After whitespace normalization, split the text into sentences
-          # This is done by a simple regexp replacement, 
-          # looking for period and interrogation symbols and adding a break after them.
-          # Note also that the split should also be indented correctly after the break.
-          indent_str = (" " * (indent+par_opts["subindent"]));
-          child["content"].gsub!(/(#{@@sentence_end})\s+/,'\1'+"\n"+indent_str)
-
           # If resulting text is empty, discard the node.
           next if child["content"] =~ /\A\Z/
 
@@ -1224,14 +1222,15 @@ class XMLFormatter
     else
       emit_break(0)
       wrap_len = block_wrap_length
+      wrap_type = block_wrap_type
       break_value = block_break_value
-      if wrap_len <= 0
+      if wrap_len <= 0 && wrap_type == "lenght"
         s << " " * indent if break_value > 0
         s << @pending.join("")
       else
         first_indent = (break_value > 0 ? indent : 0)
         # Wrap lines, then join by newlines (don't add one at end)
-        s << line_wrap(@pending, first_indent, indent, wrap_len).join("\n")
+        s << line_wrap(@pending, first_indent, indent, wrap_type, wrap_len).join("\n")
       end
     end
 
@@ -1260,7 +1259,7 @@ class XMLFormatter
   # rest_indent - indent for any remaining lines
   # max_len - maximum length of output lines (including indent)
   
-  def line_wrap(strs, first_indent, rest_indent, max_len)
+  def line_wrap(strs, first_indent, rest_indent, wrap_type, max_len)
 
     # First, tokenize the strings
     words = []
@@ -1299,6 +1298,7 @@ class XMLFormatter
     indent = first_indent
     # saved-up whitespace to put before next non-white word
     white = ""
+    prev_word = ""
   
     words2.each do |word|            # ... while words remain to wrap
       # If word is whitespace, save it. It gets added before next
@@ -1317,7 +1317,8 @@ class XMLFormatter
         white = ""
         next
       end
-      if llen + white.length + wlen > max_len
+
+      if wrap_type == "length" && llen + white.length + wlen > max_len
         # Word (plus saved whitespace) won't fit on current line.
         # Begin new line (discard any saved whitespace).
         lines << line
@@ -1327,6 +1328,19 @@ class XMLFormatter
         white = ""
         next
       end
+
+      if wrap_type == "sentence"
+        if /[\.\?\!]/.match(prev_word[-1]) && /^[[:upper:]]/.match(word[0])
+          lines << line
+          line = " " * indent + word
+          llen = indent + wlen
+          indent = rest_indent
+          white = ""
+          next
+        end
+        prev_word = word
+      end
+
       # add word to current line with saved whitespace between
       line << white + word
       llen += white.length + wlen
@@ -1482,7 +1496,7 @@ end
 # If config file still isn't defined, use the default file if it exists.
 if conf_file.nil?
   if FileTest.readable?(def_conf_file) && !FileTest.directory?(def_conf_file)
-    warn "No config file provided. Defaulting to : "+def_conf_file 
+    warn "No config file provided. Defaulting to: "+def_conf_file 
     conf_file = def_conf_file
   end
 end
