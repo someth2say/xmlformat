@@ -68,7 +68,7 @@
 # input document.
 
 use strict;
-
+use Encode;
 use Getopt::Long;
 $Getopt::Long::ignorecase = 0; # options are case sensitive
 $Getopt::Long::bundling = 1;   # allow short options to be bundled
@@ -1513,7 +1513,7 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
       $white .= $word;
       next;
     }
-    my $wlen = length ($word);
+    my $wlen = length (Encode::decode('UTF-8', $word));
     if ($llen == 0)
     {
       # New output line; it gets at least one word (discard any
@@ -1700,7 +1700,7 @@ if (!defined ($conf_file))
 }
 if (defined ($conf_file))
 {
-  warn "Reading configuration file...\n" if $verbose;
+  warn "Reading configuration file $conf_file...\n" if $verbose;
   die "Configuration file '$conf_file' is not readable.\n" if ! -r $conf_file;
   die "Configuration file '$conf_file' is a directory.\n"  if -d $conf_file;
   $xf->read_config ($conf_file)

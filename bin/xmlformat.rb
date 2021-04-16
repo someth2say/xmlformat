@@ -45,10 +45,12 @@ module XMLFormat
 
 def warn(*args)
   $stderr.print args
+  $stderr.print "\n"
 end
 
 def die(*args)
   $stderr.print args
+  $stderr.print "\n"
   exit(1)
 end
 
