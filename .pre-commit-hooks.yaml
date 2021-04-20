@@ -3,7 +3,7 @@
   name: XML Formatter (docker)
   description: >
     Formats XML files according GLS formating rules
-  entry: quay.io/someth2say/xmlformat:0.3
+  entry: quay.io/someth2say/xmlformat:0.4
   types: [xml]
   language: docker_image
   require_serial: true

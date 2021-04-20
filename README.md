@@ -13,6 +13,15 @@ Perl version. Requires perl interpreter installed.
   types: [xml]
 ```
 
+**Testing**
+```
+  bin/xmlformat.pl sentence_wrap.sgml
+```
+or
+```
+  bin/xmlformat.sh pl sentence_wrap.sgml
+```
+
 ## xmlformat_ruby
 Ruby version. Requires ruby interpreter installed.
 
@@ -23,7 +32,14 @@ Ruby version. Requires ruby interpreter installed.
   types: [xml]
 ```
 
-
+**Testing**
+````
+  bin/xmlformat.rb sentence_wrap.sgml
+```
+or
+```
+  bin/xmlformat.sh rb sentence_wrap.sgml
+```
 ## xmlformat_docker
 Containerized version. Requires docker (podman not supported yet).
 Unlike other versions, this one accepts no arguments.
@@ -32,6 +48,15 @@ Unlike other versions, this one accepts no arguments.
 ```
 - id: xmlformat_docker
   types: [xml]
+```
+
+**Testing**
+```
+    podman run -v ./test:/tmp:z --rm -it quay.io/someth2say/xmlformat:0.4 /tmp/sentence_wrap.sgml
+```
+### Build image
+```
+  podman build -t quay.io/someth2say/xmlformat:0.4 .
 ```
 
 # Arguments
