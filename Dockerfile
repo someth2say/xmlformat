@@ -10,8 +10,10 @@ LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
       io.k8s.display-name="ubi8-perl-ruby" \
       io.openshift.tags="perl ruby" 
 
+
 # Install perl and ruby interpreter
-RUN microdnf install -y perl ruby
+RUN microdnf update -y && \
+    microdnf install -y perl ruby
 ###
 
 FROM ubi8-perl-ruby
