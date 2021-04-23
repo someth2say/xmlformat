@@ -19,40 +19,39 @@ assertDiffCommandVsCommand() {
 }
 
 test_pl_length_wrap() {
-    assertDiffCommandVsFile "length_wrap.sgml" "pl"
+    assertDiffCommandVsFile "wrap/length_wrap.sgml" "pl"
 }
 
 test_pl_none_wrap() {
-    assertDiffCommandVsFile "none_wrap.sgml" "pl"
+    assertDiffCommandVsFile "wrap/none_wrap.sgml" "pl"
 }
 
 test_pl_sentence_wrap() {
-    assertDiffCommandVsFile "sentence_wrap.sgml" "pl"
+    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "pl"
 }
 
-
 test_rb_length_wrap() {
-    assertDiffCommandVsFile "length_wrap.sgml" "rb"
+    assertDiffCommandVsFile "wrap/length_wrap.sgml" "rb"
 }
 
 test_rb_none_wrap() {
-    assertDiffCommandVsFile "none_wrap.sgml" "rb"
+    assertDiffCommandVsFile "wrap/none_wrap.sgml" "rb"
 }
 
 test_br_sentence_wrap() {
-    assertDiffCommandVsFile "sentence_wrap.sgml" "rb"
+    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "rb"
 }
 
 test_both_length_wrap() {
-    assertDiffCommandVsCommand "length_wrap.sgml" 
+    assertDiffCommandVsCommand "wrap/length_wrap.sgml" 
 }
 
 test_both_none_wrap() {
-    assertDiffCommandVsCommand "none_wrap.sgml" 
+    assertDiffCommandVsCommand "wrap/none_wrap.sgml" 
 }
 
 test_both_sentence_wrap() {
-    assertDiffCommandVsCommand "sentence_wrap.sgml"
+    assertDiffCommandVsCommand "wrap/sentence_wrap.sgml"
 }
 
 # shellcheck source=shunit2
