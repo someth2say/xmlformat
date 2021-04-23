@@ -101,6 +101,8 @@ end
 "<(?:!(?:#{@@decl_ce})?|\\?(?:#{@@pi_ce})?|/(?:#{@@end_tag_ce})?|(?:#{@@elem_tag_se})?)"
 @@xml_spe = Regexp.new("#{@@text_se}|#{@@markup_spe}")
 
+#
+@@sentence_end = "[.?]\"?"
 # ----------------------------------------------------------------------
 
 # Allowable formatting options and their possible values:
@@ -905,6 +907,16 @@ class XMLFormatter
         if get_opts(child["name"])["format"] != "verbatim"
           child["content"] = tree_canonize2(child["content"], child["name"], indent+par_opts["subindent"])
         end
+
+      elsif child["type"] == "comment"
+        # Indent first line of the comment the same level as the sibilings
+        indent_str = (" " * (indent+par_opts["subindent"]));
+        #child["content"] = indent_str+child["content"]
+        child["content"].gsub!(/^/,indent_str)
+
+        # In multi-line comments, next lines are indented one more level
+        indent_cont_str = (" " * (indent+par_opts["subindent"]*2));
+        child["content"].gsub!(/\n\s*/,"\n"+indent_cont_str)
 
       elsif child["type"] == "text"
 

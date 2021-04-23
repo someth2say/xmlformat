@@ -122,6 +122,9 @@ my $MarkupSPE =
 "<(?:!(?:$DeclCE)?|\\?(?:$PI_CE)?|/(?:$EndTagCE)?|(?:$ElemTagCE)?)";
 my $XML_SPE = "$TextSE|$MarkupSPE";
 
+#
+my $SentenceEnd = "[\.\?]\"?";
+
 # ----------------------------------------------------------------------
 
 # Allowable options and their possible values:
@@ -363,6 +366,7 @@ my $self = shift;
   my $opts = $self->{block_opts_stack}->[$size-1];
   return $opts->{"wrap-length"};
 }
+
 sub block_wrap_type
 {
 my $self = shift;
@@ -1066,6 +1070,15 @@ my $indent = shift;
         $child->{content} = $self->tree_canonize2 ($child->{content},
                             $child->{name}, $indent+$par_opts->{"subindent"});
       }
+    }
+    elsif ($child->{type} eq "comment") {
+        # Indent first line of the comment the same level as the sibilings
+        my $indent_str = (" " x ( $indent+$par_opts->{"subindent"}));
+        $child->{content} =~ s/^/$indent_str/g;
+
+        # In multi-line comments, next lines are indented one more level
+        my $indent_cont_str = (" " x ( $indent+$par_opts->{"subindent"}*2));
+        $child->{content} =~ s/\n\s*/\n$indent_cont_str/g;
     }
     elsif ($child->{type} eq "text")
     {

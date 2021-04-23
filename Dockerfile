@@ -13,7 +13,8 @@ LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
 
 # Install perl and ruby interpreter
 RUN microdnf update -y && \
-    microdnf install -y perl ruby
+    microdnf install -y perl ruby && \
+    microdnf clean all
 ###
 
 FROM ubi8-perl-ruby
@@ -42,4 +43,4 @@ ADD bin ${SCRIPTS_DIR}
 RUN chgrp -R 0 ${SCRIPTS_DIR} && \
     chmod -R g=u ${SCRIPTS_DIR}
 
-ENTRYPOINT [ "xmlformat_rb.sh" ]
+ENTRYPOINT [ "xmlformat.rb" ]

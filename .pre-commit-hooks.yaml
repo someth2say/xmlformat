@@ -1,19 +1,24 @@
 ---
-- id: xmlformat_docker
-  name: XML Formatter (docker)
+- id: xmlformat
+  name: XML Formatter
   description: >
     Formats XML files according GLS formating rules
-  entry: quay.io/someth2say/xmlformat:0.4
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i"]
+  # If need to specify a language (i.e. to speed up checks): 
+  # args: ["-i","-l","perl"]
   types: [xml]
-  language: docker_image
+  language: script
   require_serial: true
 
 - id: xmlformat_ruby
   name: XML Formatter (ruby)
   description: >
     Formats XML files according GLS formating rules
-  entry: bin/xmlformat_rb.sh
-  args: []
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i","-l","ruby"]
   types: [xml]
   language: script
   require_serial: true
@@ -22,9 +27,31 @@
   name: XML Formatter (perl)
   description: >
     Formats XML files according GLS formating rules
-  entry: bin/xmlformat_pl.sh
-  args: []
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i","-l","perl"]
   types: [xml]
   language: script
   require_serial: true
 
+- id: xmlformat_podman
+  name: XML Formatter (podman)
+  description: >
+    Formats XML files according GLS formating rules
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i","-l","podman"]
+  types: [xml]
+  language: script
+  require_serial: true
+
+- id: xmlformat_docker
+  name: XML Formatter (docker)
+  description: >
+    Formats XML files according GLS formating rules
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i", "-l","docker"]
+  types: [xml]
+  language: script
+  require_serial: true

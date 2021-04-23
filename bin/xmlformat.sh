@@ -1,17 +1,33 @@
 #!/bin/bash
 
+function has() {
+  #curl -sL https://git.io/_has | bash -s $1
+  "$script_folder"/has.sh "$1"
+  if [ "$?" == "0" ]; then
+    language=$1
+    return 0
+  fi
+ return 1;
+}
+
+function autoDetectLang() {
+  echo "Starting language autodetection."
+  has "perl" || has "ruby" || has "podman" ||  has "docker" || (echo "Unable to detect a supported language. ABORTING!" && exit 2)
+}
+
 # Parameters
 script_folder=$(dirname "$0")
-language="${XMLFORMAT_LANG:-pl}"
+language="${XMLFORMAT_LANG}"
 verbose_flag=0
 
-while getopts l:f:vsuhoVp FLAG; do
+while getopts "l:f:vsuhoVpi" FLAG; do
   case $FLAG in
     l)
       language=$OPTARG #TODO: sanitize
       ;;
     f)
       cfg_file="$OPTARG"
+      [ -z "$cfg_file" ] && (echo "Unable to reach configuration file: $OPTARG" ; exit 4 )
       XMLFORMAT_ARGS="-$FLAG ${XMLFORMAT_ARGS}"
       ;;
     v) 
@@ -20,12 +36,15 @@ while getopts l:f:vsuhoVp FLAG; do
     s|u|h|o|V|p)
       XMLFORMAT_ARGS="-$FLAG ${XMLFORMAT_ARGS}"
       ;;
-    \?) #unrecognized option - show help
-      echo -e \\n"Option -$OPTARG not allowed."
+    * ) # unrecognized option - send down
+      XMLFORMAT_ARGS="-$FLAG $OPTARG ${XMLFORMAT_ARGS}"
       ;;
   esac
 done
 shift $(($OPTIND - 1))
+
+# If language not set by parameter, run language autodetection.
+[ -z "$language" ] && autoDetectLang
 
 # Default configuration
 if [ -z "$cfg_file" ] ; then
@@ -37,23 +56,21 @@ fi
 (( verbose_flag > 0)) && echo "Configuration file: $cfg_file"
 (( verbose_flag > 1)) && XMLFORMAT_ARGS="-v ${XMLFORMAT_ARGS}"
 (( verbose_flag > 1)) && echo "Format arguments: $XMLFORMAT_ARGS"
-let errors=0
-for inputfile in $@; do  
-    (( verbose_flag > 0)) && echo "Formatting file: $inputfile"
-    output=$($script_folder/xmlformat.$language $XMLFORMAT_ARGS -i $inputfile 2>&1)
-    errorcode=$?
-    if [[ $errorcode != 0 ]]; then
-      echo "Error while formatting file $inputfile ($errorcode):"
-      echo "$output"
-      let errors+=1
-    else 
-      (( verbose_flag > 1)) && echo "$output"
-    fi
-    
-done
+
+(( errors=0 ))
+SCRIPT_OUTPUT=$("$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+errorcode=$?
+echo "$SCRIPT_OUTPUT"
+
+if [[ $errorcode != 0 ]]; then
+  echo "Error while formatting files ($errorcode):"
+  (( errors+=1 ))
+else 
+  (( verbose_flag > 0)) && echo "Formatting complete."
+fi
 
 if [[ $errors != 0 ]] ; then
-  echo "Exitting with errors ($errors)"
+  (( verbose_flag > 0)) && echo "Exitting with errors ($errors)"
   exit 1
 fi
 

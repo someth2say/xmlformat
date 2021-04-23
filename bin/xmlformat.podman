@@ -1,0 +1,30 @@
+#!/bin/bash
+IMAGE="quay.io/someth2say/xmlformat:latest"
+TARGET_SRC="/src"
+TARGET_CFG="/cfg"
+LOCAL_SRC="$(pwd)"
+
+# Configuration should be mounted into the container...
+
+while getopts "l:f:b:vsuhoVpi" FLAG; do
+  case $FLAG in
+    f ) #If a configuration file is provided, then a volume should be mounted and passed acordingly.
+      cfg_file=$(readlink -f "$OPTARG")
+      cfg_folder=$(dirname "$cfg_file")
+      cfg_basename=$(basename -- "$cfg_file")
+      CFG_MOUNT="-v $cfg_folder:$TARGET_CFG"
+      ARGS="${ARGS} -f $TARGET_CFG/$cfg_basename"
+      ;;
+    * ) # All other options are just passed away
+      ARGS="${ARGS} -$FLAG $OPTARG"
+      ;;
+  esac
+done
+shift $(($OPTIND - 1))
+
+#Generate the new list of files/patterns, prefixing each with the SRC path.
+NEW_FILES="${@/#/$TARGET_SRC/}"
+SRC_MOUNT="-v $LOCAL_SRC:$TARGET_SRC:z"
+
+# Invoke podman
+podman run $CFG_MOUNT $SRC_MOUNT $IMAGE ${ARGS} $NEW_FILES
