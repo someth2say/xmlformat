@@ -2,7 +2,7 @@
 - id: xmlformat
   name: XML Formatter
   description: >
-    Formats XML files according GLS formating rules
+    Formats XML files according formating rules
   entry: bin/xmlformat.sh
   # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
   args: ["-i"]
@@ -15,7 +15,7 @@
 - id: xmlformat_ruby
   name: XML Formatter (ruby)
   description: >
-    Formats XML files according GLS formating rules
+    Formats XML files according formating rules
   entry: bin/xmlformat.sh
   # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
   args: ["-i","-l","ruby"]
@@ -26,7 +26,7 @@
 - id: xmlformat_perl
   name: XML Formatter (perl)
   description: >
-    Formats XML files according GLS formating rules
+    Formats XML files according formating rules
   entry: bin/xmlformat.sh
   # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
   args: ["-i","-l","perl"]
@@ -37,7 +37,7 @@
 - id: xmlformat_podman
   name: XML Formatter (podman)
   description: >
-    Formats XML files according GLS formating rules
+    Formats XML files according formating rules
   entry: bin/xmlformat.sh
   # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
   args: ["-i","-l","podman"]
@@ -48,7 +48,7 @@
 - id: xmlformat_docker
   name: XML Formatter (docker)
   description: >
-    Formats XML files according GLS formating rules
+    Formats XML files according formating rules
   entry: bin/xmlformat.sh
   # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
   args: ["-i", "-l","docker"]

@@ -1403,10 +1403,10 @@ Options:
     Format the document in place, replacing the contents of
     the input file with the reformatted document. (It's a
     good idea to use --backup along with this option.)
---show-config
+--show-config, -s
     Show configuration options after reading configuration
     file. This option suppresses document processing.
---show-unconfigured-elements
+--show-unconfigured-elements, -u
     Show elements that are used in the document but for
     which no options were specified in the configuration
     file. This option suppresses document output.
