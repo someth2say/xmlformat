@@ -9,7 +9,7 @@ LOCAL_SRC="$(pwd)"
 while getopts "l:f:b:vsuhoVpi" FLAG; do
   case $FLAG in
     f ) #If a configuration file is provided, then a volume should be mounted and passed acordingly.
-      cfg_file=$(readlink -f "$OPTARG")
+      cfg_file=$(realpath "$OPTARG")
       cfg_folder=$(dirname "$cfg_file")
       cfg_basename=$(basename -- "$cfg_file")
       CFG_MOUNT="-v $cfg_folder:$TARGET_CFG"
