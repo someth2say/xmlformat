@@ -13,6 +13,16 @@
       "contributions": [
         "maintenance"
       ]
+    },
+    {
+      "login": "tbazant",
+      "name": "Tomáš Bažant",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2240174?v=4",
+      "profile": "https://github.com/tbazant",
+      "contributions": [
+        "code",
+        "design"
+      ]
     }
   ],
   "contributorsPerLine": 7,
