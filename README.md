@@ -1,6 +1,6 @@
 # Overview
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-2-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 A pre-commit hook that applies formatting to XML files.
 Based on the formatter by Kitebird (http://www.kitebird.com/software/xmlformat/).
@@ -143,6 +143,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://github.com/tomschr"><img src="https://avatars.githubusercontent.com/u/1312925?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tom Schraitle</b></sub></a><br /><a href="#maintenance-tomschr" title="Maintenance">🚧</a></td>
     <td align="center"><a href="https://github.com/tbazant"><img src="https://avatars.githubusercontent.com/u/2240174?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tomáš Bažant</b></sub></a><br /><a href="https://github.com/someth2say/xmlformat/commits?author=tbazant" title="Code">💻</a> <a href="#design-tbazant" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/dkolepp"><img src="https://avatars.githubusercontent.com/u/10145457?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Dan Kolepp</b></sub></a><br /><a href="https://github.com/someth2say/xmlformat/commits?author=dkolepp" title="Tests">⚠️</a></td>
   </tr>
 </table>
 
