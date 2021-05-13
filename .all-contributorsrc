@@ -23,6 +23,15 @@
         "code",
         "design"
       ]
+    },
+    {
+      "login": "dkolepp",
+      "name": "Dan Kolepp",
+      "avatar_url": "https://avatars.githubusercontent.com/u/10145457?v=4",
+      "profile": "https://github.com/dkolepp",
+      "contributions": [
+        "test"
+      ]
     }
   ],
   "contributorsPerLine": 7,
