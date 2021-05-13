@@ -19,7 +19,7 @@ RUN microdnf update -y && \
 
 FROM ubi8-perl-ruby
 LABEL name="XMLFormat" \
-      version="0.4-SNAPSHOT" \
+      version="1.9" \
       description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
       summary="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
       io.k8s.description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
