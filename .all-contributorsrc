@@ -1,0 +1,24 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "tomschr",
+      "name": "Tom Schraitle",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1312925?v=4",
+      "profile": "https://github.com/tomschr",
+      "contributions": [
+        "maintenance"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "xmlformat",
+  "projectOwner": "someth2say",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
