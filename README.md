@@ -1,4 +1,7 @@
 # Overview
+<!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
+[![All Contributors](https://img.shields.io/badge/all_contributors-1-orange.svg?style=flat-square)](#contributors-)
+<!-- ALL-CONTRIBUTORS-BADGE:END -->
 A pre-commit hook that applies formatting to XML files.
 Based on the formatter by Kitebird (http://www.kitebird.com/software/xmlformat/).
 A copy of the original documentation is kept at [here](https://github.com/someth2say/xmlformat/blob/master/The%20xmlformat%20XML%20Document%20Formatter.html).
@@ -128,3 +131,23 @@ The following arguments are accepted by `XMLFormat`:
 * `-p`: Parses the XML documents, but applies not format.
 
 * `-i`: Format the document in place, replacing the contents of the input file with the reformatted document. If not provided, formatted results are sent to standard output.
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/tomschr"><img src="https://avatars.githubusercontent.com/u/1312925?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tom Schraitle</b></sub></a><br /><a href="#maintenance-tomschr" title="Maintenance">🚧</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-restore -->
+<!-- prettier-ignore-end -->
+
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
