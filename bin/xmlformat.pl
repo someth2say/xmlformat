@@ -74,7 +74,7 @@ $Getopt::Long::ignorecase = 0; # options are case sensitive
 $Getopt::Long::bundling = 1;   # allow short options to be bundled
 
 my $PROG_NAME = "xmlformat";
-my $PROG_VERSION = "1.04";
+my $PROG_VERSION = "1.9";
 my $PROG_LANG = "Perl";
 
 # ----------------------------------------------------------------------
@@ -1660,7 +1660,8 @@ if (defined ($help))
 
 if (defined ($show_version))
 {
-  print "$PROG_NAME $PROG_VERSION ($PROG_LANG version)\n";
+  print "$PROG_NAME $PROG_VERSION $PROG_LANG version\n";
+  print "(based on Kitebird's xmlformat implementation v1.04)\n";
   exit (0);
 }
 

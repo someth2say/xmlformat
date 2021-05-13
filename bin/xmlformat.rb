@@ -21,7 +21,7 @@
 require "getoptlong"
 
 PROG_NAME = "xmlformat"
-PROG_VERSION = "1.04"
+PROG_VERSION = "1.9"
 PROG_LANG = "Ruby"
 
 # ----------------------------------------------------------------------
@@ -1474,7 +1474,8 @@ if help
 end
 
 if show_version
-  puts "#{PROG_NAME} #{PROG_VERSION} (#{PROG_LANG} version)"
+  puts "#{PROG_NAME} #{PROG_VERSION} #{PROG_LANG} version"
+  puts "(based on Kitebird's xmlformat implementation v1.04)"
   exit(0)
 end
 
