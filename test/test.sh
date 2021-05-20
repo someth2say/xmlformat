@@ -30,6 +30,10 @@ test_pl_sentence_wrap() {
     assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "pl"
 }
 
+test_pl_wrap_only_normalized() {
+    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "pl"
+}
+
 test_rb_length_wrap() {
     assertDiffCommandVsFile "wrap/length_wrap.sgml" "rb"
 }
@@ -38,8 +42,12 @@ test_rb_none_wrap() {
     assertDiffCommandVsFile "wrap/none_wrap.sgml" "rb"
 }
 
-test_br_sentence_wrap() {
+test_rb_sentence_wrap() {
     assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "rb"
+}
+
+test_rb_wrap_only_normalized() {
+    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "rb"
 }
 
 test_both_length_wrap() {
@@ -52,6 +60,10 @@ test_both_none_wrap() {
 
 test_both_sentence_wrap() {
     assertDiffCommandVsCommand "wrap/sentence_wrap.sgml"
+}
+
+test_wrap_only_normalized() {
+    assertDiffCommandVsCommand "wrap/00014-wrap_only_normalized.sgml" 
 }
 
 # shellcheck source=shunit2
