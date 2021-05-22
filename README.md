@@ -4,7 +4,7 @@
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 A pre-commit hook that applies formatting to XML files.
 Based on the formatter by Kitebird (http://www.kitebird.com/software/xmlformat/).
-A copy of the original documentation is kept at [here](https://github.com/someth2say/xmlformat/blob/master/The%20xmlformat%20XML%20Document%20Formatter.html).
+A copy of the original documentation is kept at [here](https://github.com/someth2say/xmlformat/blob/master/docs.md).
 
 ## Description
 XML formatting should not be strict.
@@ -83,7 +83,7 @@ If the only argument you are passing is the language, you can alternatively use 
 # Configuration
 The default formatting rules applied by `XMLFormat` are highly opinionated, and target the DocBook XML format.
 
-You can create your own formatting rules in a configuration file and passing it to the formatter. The format of the configuration file is based on the format described [here](https://github.com/someth2say/xmlformat/blob/master/The%20xmlformat%20XML%20Document%20Formatter.html), with the following additions:
+You can create your own formatting rules in a configuration file and passing it to the formatter. The format of the configuration file is based on the format described [here](https://github.com/someth2say/xmlformat/blob/master/docs.md), with the following additions:
 
 * The `wrap-type` attribute controls how the content of a text node is wrapped. This attribute accepts three values: `length`, `sentence` and `none`.
     * `length` makes sure lines are not longer than a fixed length. The length of the lines is controlled by the `wrap-length` attribute.
