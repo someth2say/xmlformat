@@ -67,14 +67,11 @@
 //  as a regression test. The string should be identical to the original
 //  input document.
 
-import gnu.getopt.Getopt;
-import gnu.getopt.LongOpt;
 import org.apache.commons.cli.*;
 
 import static java.lang.System.*;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.util.*;
@@ -84,17 +81,17 @@ import java.util.stream.Collectors;
 
 public class xmlformat {
     static String PROG_NAME = "xmlformat";
-    static String PROG_VERSION = "1.04";
+    static String PROG_VERSION = "1.9";
     static String PROG_LANG = "java";
 
     // ----------------------------------------------------------------------
 
     static void warn(String... args){
-        System.err.println(args);
+        Arrays.stream(args).forEach(err::println);
     }
 
     static void die(String... args){
-        System.err.println(args);
+        Arrays.stream(args).forEach(err::println);
         System.exit(1);
     }
 
@@ -149,29 +146,29 @@ public class xmlformat {
 
     // ----------------------------------------------------------------------
 
-// Allowable formatting options and their possible values:
-// - The keys of this hash are the allowable option names
-// - The value for each key is list of allowable option values
-// - If the value is nil, the option value must be numeric
-// If any new formatting option is added to this program, it
-// must be specified here, *and* a default value for it should
-// be listed in the *DOCUMENT and *DEFAULT pseudo-element
-// option hashes.
+    // Allowable formatting options and their possible values:
+    // - The keys of this hash are the allowable option names
+    // - The value for each key is list of allowable option values
+    // - If the value is nil, the option value must be numeric
+    // If any new formatting option is added to this program, it
+    // must be specified here, *and* a default value for it should
+    // be listed in the *DOCUMENT and *DEFAULT pseudo-element
+    // option hashes.
 
     static Map<OptionSetting,Object[]> _opt_list = Map.of(
         OptionSetting.format        , new String[]{ "block", "inline", "verbatim" },
-        OptionSetting.normalize     , new String[]{ "yes", "no" },
-        OptionSetting.subindent     , null,
-        OptionSetting.wrap_length   , null,
-        OptionSetting.wrap_type     , new String[]{ "length", "sentence", "none" },
-        OptionSetting.entry_break   , null,
-        OptionSetting.exit_break    , null,
-        OptionSetting.element_break , null
+        OptionSetting.normalize     , new String[]{ "yes", "no", "true", "false" },
+        //OptionSetting.subindent     , null,
+        //OptionSetting.wrap_length   , null,
+        OptionSetting.wrap_type     , new String[]{ "length", "sentence", "none" }
+        //OptionSetting.entry_break   , null,
+        //OptionSetting.exit_break    , null,
+        //OptionSetting.element_break , null
     );
 
     static Map<String, Options> elt_opts = new HashMap<>();
 
-    void initialize(){
+    xmlformat(){
         // Formatting options for each element.
 
         // The formatting options for the *DOCUMENT and *DEFAULT pseudo-elements can
@@ -216,25 +213,27 @@ public class xmlformat {
         // to verify that the built-in values are legal.
       
         int _err_count = 0;
-        String _err_msg = "";
 
         for (Map.Entry<String,Options> entry: elt_opts.entrySet()){
+            // TODO: This is not exactly the same behaviour as other langs...
             // Check each option for element
-
-            //TODO
-
-
+            Options options = entry.getValue();
+            for (var optEntry : options.entrySet()){
+                check_option(optEntry.getKey(), optEntry.getValue().toString());
+            }
         }
 
         // Make sure that the every option is represented in the
         // *DOCUMENT and *DEFAULT structures.
 
-        for (Map.Entry<String,Options> entry: elt_opts.entrySet()){
-            // Check each option for element
-
-            //TODO
-
-
+        for (var opt_name: _opt_list.keySet()){
+            for(var elt_name: elt_opts.keySet()){
+                final Options options = elt_opts.get(elt_name);
+                if (!options.containsKey(opt_name)){
+                    warn("LOGIC ERROR: "+elt_name+" has no default '"+opt_name+"' option\n");
+                    _err_count += 1;
+                }
+            }
         }
 
         if ( _err_count > 0 )
@@ -246,7 +245,7 @@ public class xmlformat {
     static Set<String> unconf_elts;
     static List<String> tokens;
     static List<Integer> line_num;
-    static Deque<String> tree;
+    static Deque<node> tree;
     static String out_doc;
     static List<String> pending;
     static Deque<String> block_name_stack;
@@ -347,7 +346,7 @@ public class xmlformat {
     boolean block_normalize()
     {
         var opts = block_opts_stack.peek();
-        return (boolean) opts.get(OptionSetting.normalize);
+        return opts.getNormalize();
     }
 
     int block_wrap_length()
@@ -401,19 +400,20 @@ public class xmlformat {
         final List<String> lines = Files.readAllLines(Path.of(conf_file));
         for (String line : lines) {
             // line.chomp!
-            if (line.matches("^\\s*($|#)")) // skip blank lines, comments
+            if (startsWithRegex(line, "^\\s*($|#)")) // skip blank lines, comments
                 continue;
-            ;
+
             if (in_continuation) {
                 line = saved_line + " " + line;
                 saved_line = "";
                 in_continuation = false;
             }
-            if (!line.matches("^\\s")) {
+
+            if (!startsWithRegex(line, "^\\s")) {
                 // Line doesn't begin with whitespace, so it lists element names.
                 // Names are separated by whitespace or commas, possibly followed
                 // by a continuation character or comment.
-                if (line.matches("\\\\$")) {
+                if (endsWithRegex(line, "\\\\$")) {
                     in_continuation = true;
                     saved_line = line.replaceAll("\\\\$", "");  // remove continuation character
                     continue;
@@ -423,7 +423,6 @@ public class xmlformat {
                 // make sure each name has an entry in the elt_opts structure
                 for (String elt_name : elt_names)
                     elt_opts.putIfAbsent(elt_name, new Options());
-                ; // TODO: Options values?
             } else {
                 // Line begins with whitespace, so it contains an option
                 // to apply to the current element list, possibly followed by
@@ -438,6 +437,8 @@ public class xmlformat {
                 line = line.replaceAll("\\s *#.*$", "");    // remove any trailing comment
                 Pattern opt_setting_pattern = Pattern.compile("^\\s*(\\S+)(?:\\s+|\\s*=\\s*)(\\S+)$");
                 Matcher matcher = opt_setting_pattern.matcher(line);
+                if (!matcher.matches())
+                    die(conf_file + ":" + line + ": Malformed line");
                 var opt_name = matcher.group(1);
                 var opt_val = matcher.group(2);
                 if (opt_val == null)
@@ -445,41 +446,43 @@ public class xmlformat {
 
                 // Check option.If illegal, die with message.Otherwise,
                 // add option to each element in current element list
-                final OptionSetting optionSetting = OptionSetting.valueOf(opt_name);
+                final OptionSetting optionSetting = OptionSetting.valueOf(opt_name.replaceAll("-", "_"));
                 var opt_val_obj = check_option(optionSetting, opt_val);
                 for (String elt_name : elt_names) {
                     elt_opts.get(elt_name).put(optionSetting, opt_val_obj);
                 }
             }
 
-            // For any element that has missing option values, fill in the values
-            // using the options for the *DEFAULT pseudo-element.  This speeds up
-            // element option lookups later.  It also makes it unnecessary to test
-            // each option to see if it's defined: All element option structures
-            // will have every option defined.
 
-            var def_opts = elt_opts.get("*DEFAULT");
+        }
 
-            for (String elt_name : elt_opts.keySet()) {
-                if (elt_name == "*DEFAULT")
-                    continue;
-                for (OptionSetting optionSetting : def_opts.keySet()) {
-                    if (elt_opts.get(elt_name).containsKey(optionSetting)) {
-                        continue; // already set
-                    }
-                    elt_opts.get(elt_name).put(optionSetting, def_opts.get(optionSetting));
+        // For any element that has missing option values, fill in the values
+        // using the options for the *DEFAULT pseudo-element.  This speeds up
+        // element option lookups later.  It also makes it unnecessary to test
+        // each option to see if it's defined: All element option structures
+        // will have every option defined.
+        var def_opts = elt_opts.get("*DEFAULT");
+
+        for (String elt_name : elt_opts.keySet()) {
+            if (elt_name == "*DEFAULT")
+                continue;
+            for (OptionSetting optionSetting : def_opts.keySet()) {
+                if (elt_opts.get(elt_name).containsKey(optionSetting)) {
+                    continue; // already set
                 }
+                elt_opts.get(elt_name).put(optionSetting, def_opts.get(optionSetting));
             }
         }
+
     }
 
 
-  // Check option name to make sure it's legal. Check the value to make sure
-            // that it's legal for the name.  Return a two-element array:
-            // (value, nil) if the option name and value are legal.
-  // (nil, message) if an error was found; message contains error message.
-            // For legal values, the returned value should be assigned to the option,
-            // because it may get type-converted here.
+    // Check option name to make sure it's legal. Check the value to make sure
+    // that it's legal for the name.  Return a two-element array:
+    // (value, nil) if the option name and value are legal.
+    // (nil, message) if an error was found; message contains error message.
+    // For legal values, the returned value should be assigned to the option,
+    // because it may get type-converted here.
 
     Object check_option(OptionSetting optionSetting, String opt_val) {
 
@@ -490,11 +493,11 @@ public class xmlformat {
         //   the value must be one of them.
         var allowable_val = _opt_list.get(optionSetting);
         if (allowable_val!=null) {
-            if (!Arrays.asList(allowable_val).contains(opt_val_parsed)) {
+            if (!Arrays.asList(allowable_val).contains(opt_val_parsed.toString())) {
                 die("Unknown '" + optionSetting.name() + "' value: " + opt_val);
             }
         }
-        return optionSetting.checkOptionSetting(opt_val);
+        return opt_val_parsed;
     }
 
 
@@ -541,7 +544,7 @@ public class xmlformat {
                 out.println("The document contains no unconfigured elements.");
             else {
                 out.println("The following document elements were assigned no formatting options:");
-                out.println(unconf_elts.stream().collect(Collectors.joining(" "))); //TODO: Line wrap
+                out.println(unconf_elts.stream().collect(Collectors.joining(" ")));
             }
 
             unconf_elts.forEach(elt_opts::remove);
@@ -568,7 +571,7 @@ public class xmlformat {
 
         if (check_parser) {
             if (verbose) warn("Checking parser...\n");
-            // concatentation of tokens should be identical to original document
+            // concatenation of tokens should be identical to original document
             if (doc.equals(tokens.stream().collect(Collectors.joining("")))) {
                 out.println("Parser is okay");
             } else {
@@ -632,7 +635,7 @@ public class xmlformat {
         // adding the newline.
 
         var str = out_doc;
-        if (!str.isEmpty() && !str.matches("\\n\\z")) {
+        if (!str.isEmpty() && !endsWithRegex(str,"\\n\\z")) {
             warn("LOGIC ERROR: trailing newline had to be added\n");
             str = str.concat("\n");
         }
@@ -659,7 +662,7 @@ public class xmlformat {
   // called only with a legal tag.
 
     String extract_tag_name(String tag){
-        final Matcher match = Pattern.compile("\\A<\\/?(" + _name + ")").matcher(tag);
+        final Matcher match = Pattern.compile("\\A<\\/?(" + _name + ").*").matcher(tag);
         if (match.matches()) return match.group(1);
         die("Cannot find tag name in tag: " +tag);
         return null;
@@ -719,7 +722,15 @@ public class xmlformat {
                 warn ("  "+(i++)+": "+tag+"\n");
         }
     }
-    
+
+    static boolean startsWithRegex(String string, String regex){
+        return Pattern.compile(regex+".*", Pattern.DOTALL).matcher(string).matches();
+    }
+
+    static boolean endsWithRegex(String string, String regex){
+        return Pattern.compile(".*"+regex, Pattern.DOTALL).matcher(string).matches();
+    }
+
     // Convert the list of XML document tokens to a tree representation.
     // The implementation uses a loop and a stack rather than recursion.
 
@@ -731,30 +742,30 @@ public class xmlformat {
 
         var tag_stack = new ArrayDeque<String>();        // stack for element tags
         ArrayDeque<Deque<node>> children_stack = new ArrayDeque<>();   // stack for lists of children
-        Deque<node> children = new ArrayDeque<node>();         // current list of children
+        Deque<node> children = new ArrayDeque<>();         // current list of children
         var err_count = 0;
 
         // Note: the text token pattern test assumes that all text tokens
         // are non-empty. This should be true, because REX doesn't create
         // empty tokens.
+        TriFunction<Integer, Integer, String, String> tok_err =
+                (line_num, token_num, _token) -> String.format("Error near line %s, token %i (%s)", line_num, token_num, _token);
 
         for (var i=0; i<tokens.size(); i++) {
             var token = tokens.get(i);
             var _line_num = line_num.get(i);
-            TriFunction<Integer, Integer, String, String> tok_err =
-                    (line_num, token_num, _token) -> String.format("Error near line %s, token %i (%s)", line_num, token_num, _token);
 
-            if (token.matches("\\A[^<]")) {                    // text
+            if (startsWithRegex(token,"\\A[^<]")) {                    // text
                 children.add(new text_node(token));
-            } else if (token.matches("\\A<!--")) {             // comment
+            } else if (startsWithRegex(token,"\\A<!--")) {             // comment
                 children.add(new comment_node(token));
-            } else if (token.matches("\\A<\\?")) {             // processing instruction
+            } else if (startsWithRegex(token,"\\A<\\?")) {             // processing instruction
                 children.add(new pi_node(token));
-            } else if (token.matches("\\A<!DOCTYPE")) {        // DOCTYPE
+            } else if (startsWithRegex(token,"\\A<!DOCTYPE")) {        // DOCTYPE
                 children.add(new doctype_node(token));
-            } else if (token.matches("\\A<!\\[")) {            // CDATA
+            } else if (startsWithRegex(token,"\\A<!\\[")) {            // CDATA
                 children.add(new cdata_node(token));
-            } else if (token.matches("\\A<\\/")) {             // element close tag
+            } else if (startsWithRegex(token,"\\A<\\/")) {             // element close tag
                 if (tag_stack.isEmpty()) {
                     warn(tok_err.apply(_line_num, i, token) + ": Close tag w/o preceding open tag; malformed document?\n");
                     err_count += 1;
@@ -778,15 +789,15 @@ public class xmlformat {
                 }
                 var elt = element_node(tag, token, children);
                 children = children_stack.pop();
-                children.push(elt);
+                children.add(elt);
             } else {                             // element open tag
-            // If we reach here, we're seeing the open tag for an element:
-            // - If the tag is also the close tag (e.g., <abc/>), close the
-            //   element immediately, giving it an empty child list.
-            // - Otherwise, push tag and child list on stacks, begin new child
-            //   list for element body.
-                if (token.matches("\\/>\\Z")) {     // tag is of form <abc/>
-                    children.push(element_node(token, "", new ArrayDeque<>()));
+                // If we reach here, we're seeing the open tag for an element:
+                // - If the tag is also the close tag (e.g., <abc/>), close the
+                //   element immediately, giving it an empty child list.
+                // - Otherwise, push tag and child list on stacks, begin new child
+                //   list for element body.
+                if (endsWithRegex(token,"\\/>\\Z")) {     // tag is of form <abc/>
+                    children.add(element_node(token, "", new ArrayDeque<>()));
                 } else {             // tag is of form <abc>
                     tag_stack.push(token);
                     children_stack.push(children);
@@ -819,50 +830,57 @@ public class xmlformat {
     class node {
         final String type;
         String content;
+        Deque<node> children;
         public String name;
         public String open_tag;
         public String close_tag;
 
-        protected node(String type, String content) {
+        protected node(String type, String content, Deque<node> children) {
           this.type = type;
           this.content = content;
+          this.children = children;
       }
+
+        @Override
+        public String toString() {
+            return this.open_tag+"{"+(content!=null?content:"")+"}";
+        }
     }
 
     // Generators for specific non-element nodes
     class text_node extends node {
       protected text_node( String content) {
-          super("text", content);
+          super("text", content, null);
       }
     }
     class comment_node extends node {
         protected comment_node( String content) {
-            super("comment", content);
+            super("comment", content, null);
         }
     }
     class pi_node extends node {
         protected pi_node( String content) {
-            super("pi", content);
+            super("pi", content, null);
         }
     }
     class doctype_node extends node {
         protected doctype_node( String content) {
-            super("DOCTYPE", content);
+            super("DOCTYPE", content, null);
         }
     }
     class cdata_node extends node {
         protected cdata_node( String content) {
-            super("CDATA", content);
+            super("CDATA", content, null);
         }
     }
 
-  // For an element node, create a standard node with the type and content
-  // key/value pairs. Then add pairs for the "name", "open_tag", and
-  // "close_tag" hash keys.
+    // For an element node, create a standard node with the type and content
+    // key/value pairs. Then add pairs for the "name", "open_tag", and
+    // "close_tag" hash keys.
 
     node element_node(String open_tag, String close_tag, Deque<node> children) {
-        node elt = new node("elt", children);
-        // name is the open tag with angle brackets and attibutes stripped
+        node elt = new node("elt", null, children);
+        // name is the open tag with angle brackets and attributes stripped
         elt.name = extract_tag_name(open_tag);
         elt.open_tag = open_tag;
         elt.close_tag = close_tag;
@@ -872,7 +890,7 @@ public class xmlformat {
     // ----------------------------------------------------------------------
 
     // Convert the given XML document tree (or subtree) to string form by
-    // concatentating all of its components.  Argument is a reference
+    // concatenating all of its components.  Argument is a reference
     // to a list of nodes at a given level of the tree.  (If argument is
     // missing, use the top level of the tree.)
 
@@ -881,7 +899,7 @@ public class xmlformat {
         return tree_stringify(tree);
     }
 
-    String tree_stringify(List<node> children){
+    String tree_stringify(Deque<node> children){
         StringBuilder str = new StringBuilder();
         for(node child: children){
             // - Elements have list of child nodes as content (process recursively)
@@ -889,7 +907,7 @@ public class xmlformat {
 
             if (child.type.equals("elt")) {
                 str.append(child.open_tag)
-                   .append(tree_stringify(child.content.stream().toList()))
+                   .append(tree_stringify(child.children))
                    .append(child.close_tag);
             } else
                 str.append(child.content);
@@ -937,7 +955,7 @@ public class xmlformat {
         // the block stack so they can be used to control canonization of
         // inline child elements.
 
-        if (par_opts.get(OptionSetting.format) == "block") {
+        if (par_opts.getFormat().equals("block")) {
             begin_block(par_name, par_opts);
         }
 
@@ -950,19 +968,19 @@ public class xmlformat {
         var new_children = new ArrayDeque<node>();
 
         while (!children.isEmpty()) {
-            var child = children.pollLast();
+            var child = children.pollFirst();
 
             if (child.type == "elt") {
 
                 // Leave verbatim elements untouched. For other element nodes,
                 // canonize child list using options appropriate to element.
 
-                if (get_opts(child.name).get(OptionSetting.format) != "verbatim") {
-                    child.content = tree_canonize2(child.content, child.name, indent + (Integer) par_opts.get(OptionSetting.subindent));
+                if (!get_opts(child.name).getFormat().equals("verbatim")) {
+                    child.children = tree_canonize2(child.children, child.name, indent + (Integer) par_opts.get(OptionSetting.subindent));
                 }
 
             } else if (child.type == "comment") {
-                // Indent first line of the comment the same level as the sibilings
+                // Indent first line of the comment the same level as the siblings
                 var indent_str = " ".repeat(indent + (Integer)par_opts.get(OptionSetting.subindent));
                 child.content = child.content.replaceAll("^", indent_str);
 
@@ -977,7 +995,7 @@ public class xmlformat {
                 // Paranoia check: We should never get here for verbatim elements,
                 // because normalization is irrelevant for them.
 
-                if (par_opts.get(OptionSetting.format) == "verbatim") {
+                if (par_opts.getFormat().equals("verbatim")) {
                     die ("LOGIC ERROR: trying to canonize verbatim element "+par_name+"!\n");
                 }
 
@@ -1004,24 +1022,25 @@ public class xmlformat {
                     var next_child = children.peekFirst();
 
                     child.content = child.content.replaceAll("\\s+"," ");
-                    if ((prev_child==null && par_opts.get(OptionSetting.format) == "block") || non_normalized_node(prev_child)) {
+                    if ((prev_child==null && par_opts.getFormat().equals("block")) || non_normalized_node(prev_child)) {
                         child.content = child.content.replaceFirst("\\A ","");
                     }
-                    if (next_child==null && par_opts.get(OptionSetting.format) == "block") || non_normalized_node(next_child)) {
+                    if ((next_child==null && par_opts.getFormat().equals("block")) || non_normalized_node(next_child)) {
                         child.content = child.content.replaceFirst(" \\Z","");
                     }
 
                     // If resulting text is empty, discard the node.
+                    //TODO: This is child.isEmpty()?
                     if (child.content.matches("\\A\\Z"))
                         continue;
 
                 }
             }
-            new_children.push(child);
+            new_children.add(child);
         }
 
         // Pop block stack if parent was a block element
-         if (par_opts.get(OptionSetting.format) == "block")
+         if (par_opts.getFormat().equals("block"))
              end_block();
 
          return new_children;
@@ -1049,11 +1068,11 @@ public class xmlformat {
         switch (node.type) {
             case "elt":
                 var opts = get_opts(node.name);
-                switch (opts.get(OptionSetting.format).toString()) {
+                switch (opts.getFormat()) {
                     case "verbatim":
                         return true;
                     case "block":
-                        return opts.get(OptionSetting.normalize) == "no";
+                        return opts.getNormalize() == false;
                     case "inline":
                         return false;
                     default:
@@ -1087,7 +1106,7 @@ public class xmlformat {
     // If parent name and children are not given, format the entire document.
     // Assume prevailing indent = 0 if not given.
     void tree_format() {
-       return tree_format("*DOCUMENT",tree,0) ;
+        tree_format("*DOCUMENT",tree,0) ;
     }
 
     void tree_format(String par_name, Deque<node> children, int indent){
@@ -1101,7 +1120,7 @@ public class xmlformat {
         // - Set initial break type to entry-break.
         // - Shift prevailing indent right before generating child content.
 
-        if (par_opts.get(OptionSetting.format) == "block"){
+        if (par_opts.getFormat().equals("block")){
             begin_block(par_name, par_opts);
             set_block_break_type("entry-break");
             indent += (Integer)par_opts.get(OptionSetting.subindent);
@@ -1139,12 +1158,12 @@ public class xmlformat {
                 // - Print literally without change (use _stringify).
                 // - Do not line-wrap or add any indent.
 
-                if (child_opts.get(OptionSetting.format) == "verbatim"){
+                if (child_opts.getFormat().equals("verbatim")){
                     flush_pending(indent);
-                    if (!(prev_child_is_text && !block_normalize)) emit_break(0);
+                    if (!(prev_child_is_text && !block_normalize())) emit_break(0);
                     set_block_break_type("element-break");
                     add_to_doc(child.open_tag +
-                            tree_stringify(child.content) +
+                            tree_stringify(child.children) +
                             child.close_tag);
                     continue;
                 }
@@ -1154,9 +1173,9 @@ public class xmlformat {
                 // - Do not line-wrap content; just add content to pending output
                 //   and let it be wrapped as part of parent's content.
 
-                if (child_opts.get(OptionSetting.format) == "inline"){
+                if (child_opts.getFormat().equals("inline")){
                     add_to_pending(child.open_tag);
-                    tree_format(child.name, child.content, indent);
+                    tree_format(child.name, child.children, indent);
                     add_to_pending(child.close_tag);
                     continue;
                 }
@@ -1179,16 +1198,16 @@ public class xmlformat {
                 //   - Put out closing tag
 
                 flush_pending(indent);
-                if (!(prev_child_is_text && !block_normalize()))  emit_break(indent) ;
+                if (!(prev_child_is_text && !block_normalize()))
+                    emit_break(indent) ;
                 set_block_break_type("element-break");
                 add_to_doc(child.open_tag);
-                tree_format(child.name, child.content, indent);
-                if (!(((Integer)child_opts.get(OptionSetting.exit_break)) <= 0 ||
+                tree_format(child.name, child.children, indent);
+
+                if (!(child_opts.getExitBreak() <= 0 ||
                             child.close_tag.isEmpty() ||
-                            child.content.isEmpty() ||
-                            (!child.content.isEmpty() &&
-                            child.content.last.type == "text" &&
-                            child_opts.get(OptionSetting.normalize) == "no"))) {
+                            child.children.isEmpty() ||
+                        !child.children.isEmpty() && child.children.peekLast().type == "text" && !child_opts.getNormalize())) {
                     add_to_doc(" ".repeat(indent));
                 }
                 add_to_doc(child.close_tag);
@@ -1217,7 +1236,7 @@ public class xmlformat {
         //   out the exit break.
         // - Pop the block stack
 
-        if (par_opts.get(OptionSetting.format) == "block") {
+        if (par_opts.getFormat().equals("block")) {
             if (!children.isEmpty()) {
                 flush_pending(indent);
                 set_block_break_type("exit-break");
@@ -1260,49 +1279,48 @@ public class xmlformat {
 
     void flush_pending(int indent) {
 
-    // Do nothing if nothing to flush
-    if (pending.isEmpty()) return;
+        // Do nothing if nothing to flush
+        if (pending.isEmpty()) return;
 
-    // If current block is not normalized:
-    // - Text nodes cannot be modified (no wrapping or indent).  Flush
-    //   text as is without adding a break or indent.
-    // If current block is normalized:
-    // - Add a break.
-    // - If line wrap is disabled:
-    //   - Add indent if there is a break. (If there isn't a break, text
-    //     should immediately follow preceding tag, so don't add indent.)
-    //   - Add text without wrapping
-    // - If line wrap is enabled:
-    //   - First line indent is 0 if there is no break. (Text immediately
-    //     follows preceding tag.) Otherwise first line indent is same as
-    //     prevailing indent.
-    //   - Any subsequent lines get the prevailing indent.
+        // If current block is not normalized:
+        // - Text nodes cannot be modified (no wrapping or indent).  Flush
+        //   text as is without adding a break or indent.
+        // If current block is normalized:
+        // - Add a break.
+        // - If line wrap is disabled:
+        //   - Add indent if there is a break. (If there isn't a break, text
+        //     should immediately follow preceding tag, so don't add indent.)
+        //   - Add text without wrapping
+        // - If line wrap is enabled:
+        //   - First line indent is 0 if there is no break. (Text immediately
+        //     follows preceding tag.) Otherwise first line indent is same as
+        //     prevailing indent.
+        //   - Any subsequent lines get the prevailing indent.
 
-    // After flushing text, advance break type to element-break.
+        // After flushing text, advance break type to element-break.
 
+        StringBuilder s = new StringBuilder();
 
-    StringBuilder s = new StringBuilder();
-
-    if (!block_normalize())
-        s.append(pending.stream().collect(Collectors.joining("")));
-    else {
-        emit_break(0);
-        var wrap_len = block_wrap_length();
-        var wrap_type = block_wrap_type();
-        var break_value = block_break_value();
-        if (wrap_len <= 0 && wrap_type == WRAP_TYPE.length) {
-            if (break_value > 0) s.append(" ".repeat(indent));
+        if (!block_normalize())
             s.append(pending.stream().collect(Collectors.joining("")));
-        } else {
-            var first_indent = (break_value > 0 ? indent : 0);
-            // Wrap lines, then join by newlines (don't add one at end)
-            s.append(line_wrap(pending, first_indent, indent, wrap_type, wrap_len).stream().collect(Collectors.joining("\n")));
+        else {
+            emit_break(0);
+            var wrap_len = block_wrap_length();
+            var wrap_type = block_wrap_type();
+            var break_value = block_break_value();
+            if (wrap_len <= 0 && wrap_type == WRAP_TYPE.length) {
+                if (break_value > 0) s.append(" ".repeat(indent));
+                s.append(pending.stream().collect(Collectors.joining("")));
+            } else {
+                var first_indent = (break_value > 0 ? indent : 0);
+                // Wrap lines, then join by newlines (don't add one at end)
+                s.append(line_wrap(pending, first_indent, indent, wrap_type, wrap_len).stream().collect(Collectors.joining("\n")));
+            }
         }
-    }
 
-    add_to_doc(s.toString());
-    pending = new ArrayList<>();
-    set_block_break_type("element-break");
+        add_to_doc(s.toString());
+        pending = new ArrayList<>();
+        set_block_break_type("element-break");
     }
 
     // Perform line-wrapping of string array to lines no longer than given
@@ -1328,11 +1346,11 @@ public class xmlformat {
         // First, tokenize the strings
         List<String> words = new ArrayList<>();
         for(var str:strs){
-            if (str.matches("\\A</")) {
+            if (startsWithRegex( str,"\\A</")) {
                 // String is a tag; treat as atomic unit and don't split
                 words.add(str);
             } else {
-                  // String of white and non-white tokens.
+                // String of white and non-white tokens.
                 // Tokenize into white and non-white tokens.
                 //str.scan(/\S+|\s+/).each { |word| words << word }
                 Pattern.compile("\\S+|\\s+").matcher(str)
@@ -1348,11 +1366,11 @@ public class xmlformat {
         var words2 = new ArrayDeque<String>();
         for(var word:words){
           // If there is a previous word that does not end with whitespace,
-          // and the currrent word does not begin with whitespace, concatenate
+          // and the current word does not begin with whitespace, concatenate
           // current word to previous word.  Otherwise append current word to
           // end of list of words
-            if (!words2.isEmpty() && !words2.peek().matches("\\s\\z") && !word.matches("\\A\\s")) {
-                words2.push(words2.pop().concat(word));
+            if (!words2.isEmpty() && !endsWithRegex(words2.peekLast(),"\\s\\z") && !startsWithRegex(word,"\\A\\s")) {
+                words2.add(words2.pollLast().concat(word));
             } else {
                 words2.add(word);
             }
@@ -1370,7 +1388,7 @@ public class xmlformat {
         for(var word: words2){         // ... while words remain to wrap
             // If word is whitespace, save it. It gets added before next
             // word if no line-break occurs.
-            if (word.matches("\\A\\s") ) {
+            if (startsWithRegex(word,"\\A\\s") ) {
                 white.append(word);
                 continue;
             }
@@ -1397,7 +1415,11 @@ public class xmlformat {
             }
 
             if( wrap_type == WRAP_TYPE.sentence) {
-                if ((prev_word.substring(prev_word.length()-1).matches("[\\.\\?\\!]")) && (word.substring(0,1).matches("^[[:upper:]]"))) {
+                //if ((prev_word.substring(prev_word.length()-1).matches("[\\.\\?\\!]")
+                // && (word.substring(0,1).matches("^[[:upper:]]"))) {
+                // TODO: Optimize those to not use regex
+                    if ( endsWithRegex(prev_word, "[\\.\\?\\!]")
+                        && startsWithRegex(word,"^[A-Z]")) {
                     lines.add(line);
                     line = " ".repeat(indent) + word;
                     llen = indent + wlen;
@@ -1425,6 +1447,7 @@ public class xmlformat {
     // Begin main program
 
     public static void main(String... args) throws ParseException, IOException {
+
         String usage = """
                 Usage: #{__dir__} #{PROG_NAME} [options] xml-file
 
@@ -1490,7 +1513,7 @@ public class xmlformat {
         final CommandLine commandLine = new DefaultParser().parse(opts, args);
         for (var opt: commandLine.getOptions()){
             switch (opt.getLongOpt())   {
-                case "--help":
+                case "help":
                     help = true; break;
                 case "backup":
                     backup_suffix = opt.getValue(); break;
@@ -1522,6 +1545,7 @@ public class xmlformat {
 
         if (show_version) {
             out.println(PROG_NAME+" "+PROG_VERSION+ "("+PROG_LANG+" version)");
+            out.println("based on Kitebird's xmlformat implementation v1.04");
             exit(0);
         }
 
@@ -1647,7 +1671,7 @@ enum OptionSetting {
         if (Integer.class.equals(this.backingClass)) {
             return Integer.valueOf(settingValue);
         } else if (Boolean.class.equals(this.backingClass)) {
-            return Boolean.valueOf(settingValue);
+            return settingValue.equalsIgnoreCase("yes") || settingValue.equalsIgnoreCase("true") || settingValue.equalsIgnoreCase("1") | settingValue.equalsIgnoreCase("on");
         } else if (WRAP_TYPE.class.equals(this.backingClass)) {
             return WRAP_TYPE.valueOf(settingValue.replaceAll("-","_"));
         } else {
@@ -1681,6 +1705,18 @@ class Options extends EnumMap<OptionSetting, Object> {
 
     public void putSetting(OptionSetting setting, String value) {
         this.put(setting, setting.checkOptionSetting(value));
+    }
+
+    boolean getNormalize(){
+        return (boolean) this.get(OptionSetting.normalize);
+    }
+
+    // TODO: Enum for format options
+    String getFormat() {
+        return this.get(OptionSetting.format).toString();
+    }
+    int getExitBreak(){
+        return (int) this.get(OptionSetting.exit_break);
     }
 }
 
