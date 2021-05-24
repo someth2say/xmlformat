@@ -6,64 +6,75 @@ set +o posix
 assertDiffCommandVsFile() {
     filenames="$1"
     lang="$2"
-    output=$(diff "${filenames}.formatted" <( perl ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    echo $lang: $filenames vs $filenames.formatted
+    if [ "$lang" == "java" ]; then
+        output=$(diff "${filenames}.formatted" <(jbang ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    else
+        output=$(diff "${filenames}.formatted" <(../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    fi
     exitcode=$?
     assertEquals "File diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
 assertDiffCommandVsCommand() {
     filenames="$1"
-    output=$(diff <( ruby ../bin/xmlformat.rb -f ${filenames}.conf ${filenames} ) <( perl ../bin/xmlformat.pl -f ${filenames}.conf ${filenames} ) )
+    lang1="$2"
+    lang2="$3"
+    output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
     exitcode=$?
     assertEquals "Command diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
-test_pl_length_wrap() {
-    assertDiffCommandVsFile "wrap/length_wrap.sgml" "pl"
+
+assertMultipleCommandsVsCommand(){
+    XML_FILE="$1"
+    shift
+    for a; do
+        shift
+        for b; do
+            printf "%s - %s: %s\n" "$a" "$b" "$XML_FILE"
+            assertDiffCommandVsCommand "$XML_FILE" "$a" "$b" 
+        done
+    done
 }
 
-test_pl_none_wrap() {
-    assertDiffCommandVsFile "wrap/none_wrap.sgml" "pl"
+assertMultipleCommandsVsFile(){
+    XML_FILE="$1"
+    shift
+    for i in "$@"
+    do
+        assertDiffCommandVsFile "${XML_FILE}" "$i" || exit 1;
+    done
 }
 
-test_pl_sentence_wrap() {
-    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "pl"
+########################################################
+
+test_length_wrap(){
+    assertMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
-test_pl_wrap_only_normalized() {
-    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "pl"
+test_sentence_wrap() {
+    assertMultipleCommandsVsFile "wrap/sentence_wrap.sgml" "pl" "rb" "java"
 }
 
-test_rb_length_wrap() {
-    assertDiffCommandVsFile "wrap/length_wrap.sgml" "rb"
+test_length_wrap() {
+    assertMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
-test_rb_none_wrap() {
-    assertDiffCommandVsFile "wrap/none_wrap.sgml" "rb"
-}
-
-test_rb_sentence_wrap() {
-    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "rb"
-}
-
-test_rb_wrap_only_normalized() {
-    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "rb"
+test_none_wrap() {
+    assertMultipleCommandsVsFile "wrap/none_wrap.sgml" "pl" "rb" "java"
 }
 
 test_both_length_wrap() {
-    assertDiffCommandVsCommand "wrap/length_wrap.sgml" 
+    assertMultipleCommandsVsCommand "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
 test_both_none_wrap() {
-    assertDiffCommandVsCommand "wrap/none_wrap.sgml" 
+    assertMultipleCommandsVsCommand "wrap/none_wrap.sgml"  "pl" "rb" "java"
 }
 
 test_both_sentence_wrap() {
-    assertDiffCommandVsCommand "wrap/sentence_wrap.sgml"
-}
-
-test_wrap_only_normalized() {
-    assertDiffCommandVsCommand "wrap/00014-wrap_only_normalized.sgml" 
+    assertMultipleCommandsVsCommand "wrap/sentence_wrap.sgml" "pl" "rb" "java"
 }
 
 # shellcheck source=shunit2
