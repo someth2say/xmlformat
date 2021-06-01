@@ -1618,8 +1618,8 @@ public class xmlformat {
             }
         }  else {
             for(var file:commandLine.getArgs()) {
-                if (verbose) warn("Reading document //{file}...\n");
-                var in_doc = Files.lines(Path.of(file), StandardCharsets.UTF_8).collect(Collectors.joining("\n"));
+                if (verbose) warn("Reading document "+file+"...\n");
+                var in_doc = new String(Files.readAllBytes(Path.of(file)));
 
                 out_doc = xf.process_doc(in_doc,
                     verbose, check_parser, canonize_only, show_unconf_elts, 0);
