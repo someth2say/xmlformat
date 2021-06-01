@@ -610,7 +610,7 @@ public class xmlformat {
         tree_canonize(indent);
 
         if (canonize_only) {
-            out.println(tree_stringify());
+            out.print(tree_stringify());
             return null;
         }
 
@@ -662,9 +662,9 @@ public class xmlformat {
   // called only with a legal tag.
 
     String extract_tag_name(String tag){
-        final Matcher match = Pattern.compile("\\A<\\/?(" + _name + ").*").matcher(tag);
+        final Matcher match = Pattern.compile("\\A<\\/?(" + _name + ").*", Pattern.DOTALL).matcher(tag);
         if (match.matches()) return match.group(1);
-        die("Cannot find tag name in tag: " +tag);
+        die("Cannot find tag name in tag: " +tag +"\n Pattern is: "+match.pattern());
         return null;
     }
 
@@ -1614,7 +1614,7 @@ public class xmlformat {
                         verbose, check_parser, canonize_only, show_unconf_elts, 0);
             if (out_doc!=null) {
                 if (verbose) warn("Writing output document...\n");
-                out.println(out_doc);
+                out.print(out_doc);
             }
         }  else {
             for(var file:commandLine.getArgs()) {
@@ -1635,7 +1635,7 @@ public class xmlformat {
                     Files.writeString(Path.of(file), out_doc, StandardCharsets.UTF_8, StandardOpenOption.WRITE);
                 } else {
                     if (verbose) warn("Writing output document...\n");
-                    out.println(out_doc);
+                    out.print(out_doc);
                 }
             }
         }
