@@ -1,4 +1,5 @@
 ///usr/bin/env jbang "$0" "$@" ; exit $?
+//JAVA 15+
 //DEPS commons-cli:commons-cli:1.4
 
 //  xmlformat - configurable XML file formatter/pretty-printer

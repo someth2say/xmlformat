@@ -58,7 +58,12 @@ fi
 (( verbose_flag > 1)) && echo "Format arguments: $XMLFORMAT_ARGS"
 
 (( errors=0 ))
-SCRIPT_OUTPUT=$("$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+if [ "$language" == "java" ]; then
+  SCRIPT_OUTPUT=$($script_folder/jbang "$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+else
+  SCRIPT_OUTPUT=$("$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+fi
+
 errorcode=$?
 echo "$SCRIPT_OUTPUT"
 
