@@ -6,7 +6,7 @@ set +o posix
 assertDiffCommandVsFile() {
     filenames="$1"
     lang="$2"
-    echo $lang: $filenames vs $filenames.formatted
+    echo "$lang($filenames) vs $filenames.formatted"
     if [ "$lang" == "java" ]; then
         output=$(diff "${filenames}.formatted" <(jbang ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
     else
@@ -75,6 +75,10 @@ test_both_none_wrap() {
 
 test_both_sentence_wrap() {
     assertMultipleCommandsVsCommand "wrap/sentence_wrap.sgml" "pl" "rb" "java"
+}
+
+test_big_file(){
+    assertMultipleCommandsVsFile "big/howto.xml" "pl" "rb" "java"
 }
 
 # shellcheck source=shunit2
