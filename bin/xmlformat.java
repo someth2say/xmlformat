@@ -986,7 +986,7 @@ public class xmlformat {
 
                 // In multi-line comments, next lines are indented one more level
                 var indent_cont_str = " ".repeat(indent + (Integer)par_opts.get(OptionSetting.subindent) * 2);
-                child.content = child.content.replaceAll("\\n\\s*", indent_cont_str);
+                child.content = child.content.replaceAll("\\n\\s*", "\n"+indent_cont_str);
 
             } else if (child.type == "text") {
 
