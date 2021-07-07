@@ -154,7 +154,7 @@ class XMLFormatter
       "normalize"     => "no",
       "subindent"     => 0,
       "wrap-length"   => 0,
-      "wrap-type"     => "sentence",
+      "wrap-type"     => "length",
       "entry-break"   => 0, # do not change
       "exit-break"    => 1, # do not change
       "element-break" => 1
@@ -168,7 +168,7 @@ class XMLFormatter
       "normalize"     => "no",
       "subindent"     => 1,
       "wrap-length"   => 0,
-      "wrap-type"     => "sentence",
+      "wrap-type"     => "length",
       "entry-break"   => 1,
       "exit-break"    => 1,
       "element-break" => 1
