@@ -55,3 +55,14 @@
   types: [xml]
   language: script
   require_serial: true
+
+- id: xmlformat_java
+  name: XML Formatter (java)
+  description: >
+    Formats XML files according formating rules
+  entry: bin/xmlformat.sh
+  # Do not remove the "-i" argument. It makes changes inline. Else, changes are dumped to stdout, that is somehow useless here.
+  args: ["-i", "-l","java"]
+  types: [xml]
+  language: script
+  require_serial: true
