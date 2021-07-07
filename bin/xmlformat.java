@@ -750,7 +750,7 @@ public class xmlformat {
         // are non-empty. This should be true, because REX doesn't create
         // empty tokens.
         TriFunction<Integer, Integer, String, String> tok_err =
-                (line_num, token_num, _token) -> String.format("Error near line %s, token %i (%s)", line_num, token_num, _token);
+                (line_num, token_num, _token) -> String.format("Error near line %s, token %d (%s)", line_num, token_num, _token);
 
         for (var i=0; i<tokens.size(); i++) {
             var token = tokens.get(i);
