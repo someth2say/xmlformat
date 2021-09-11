@@ -1,7 +1,7 @@
-#! /bin/sh
-#   shellcheck disable=SC2039
+#! /bin/bash
 
 set +o posix
+set -u 
 
 assertEqualsDiffCommandVsFile() {
     filenames="$1"
