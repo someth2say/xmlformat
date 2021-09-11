@@ -19,8 +19,16 @@ assertEqualsDiffCommandVsFile() {
 assertEqualsDiffCommandVsCommand() {
     filenames="$1"
     lang1="$2"
-    lang2="$
-    output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+    lang2="$3"
+    if [ "$lang1" == "java" ]; then
+        output=$(diff <( jbang ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+    else 
+        if [ "$lang2" == "java" ]; then
+            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( jbang ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+        else
+            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+        fi
+    fi
     exitcode=$?
     assertEquals "Command diff does not match: \n${output}\n" 0 "${exitcode}"
 }
