@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE preface PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<preface id="preface">
+ <title>Preface</title>
+ <section>
+  <title>Using Code Examples</title>
+  <para>
+   Selling or distributing a CD-ROM of examples from O’Reilly books does require
+   permission. Answering a question by citing this book and quoting example code
+   does not require permission.
+  </para>
+ </section>

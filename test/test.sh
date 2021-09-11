@@ -1,69 +1,96 @@
-#! /bin/sh
-#   shellcheck disable=SC2039
+#! /bin/bash
 
 set +o posix
+set -u 
 
-assertDiffCommandVsFile() {
+assertEqualsDiffCommandVsFile() {
     filenames="$1"
     lang="$2"
-    output=$(diff "${filenames}.formatted" <( perl ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    echo "$lang($filenames) vs $filenames.formatted"
+    if [ "$lang" == "java" ]; then
+        output=$(diff "${filenames}.formatted" <(jbang ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    else
+        output=$(diff "${filenames}.formatted" <(../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
+    fi
     exitcode=$?
     assertEquals "File diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
-assertDiffCommandVsCommand() {
+assertEqualsDiffCommandVsCommand() {
     filenames="$1"
-    output=$(diff <( ruby ../bin/xmlformat.rb -f ${filenames}.conf ${filenames} ) <( perl ../bin/xmlformat.pl -f ${filenames}.conf ${filenames} ) )
+    lang1="$2"
+    lang2="$3"
+    if [ "$lang1" == "java" ]; then
+        output=$(diff <( jbang ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+    else 
+        if [ "$lang2" == "java" ]; then
+            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( jbang ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+        else
+            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
+        fi
+    fi
     exitcode=$?
     assertEquals "Command diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
-test_pl_length_wrap() {
-    assertDiffCommandVsFile "wrap/length_wrap.sgml" "pl"
+
+assertEqualsMultipleCommandsVsCommand(){
+    XML_FILE="$1"
+    shift
+    for a; do
+        shift
+        for b; do
+            printf "%s - %s: %s\n" "$a" "$b" "$XML_FILE"
+            assertEqualsDiffCommandVsCommand "$XML_FILE" "$a" "$b" 
+        done
+    done
 }
 
-test_pl_none_wrap() {
-    assertDiffCommandVsFile "wrap/none_wrap.sgml" "pl"
+assertEqualsMultipleCommandsVsFile(){
+    XML_FILE="$1"
+    shift
+    for i in "$@"
+    do
+        assertEqualsDiffCommandVsFile "${XML_FILE}" "$i" || exit 1;
+    done
 }
 
-test_pl_sentence_wrap() {
-    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "pl"
+########################################################
+
+test_length_wrap(){
+    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
-test_pl_wrap_only_normalized() {
-    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "pl"
+test_sentence_wrap() {
+    assertEqualsMultipleCommandsVsFile "wrap/sentence_wrap.sgml" "pl" "rb" "java"
 }
 
-test_rb_length_wrap() {
-    assertDiffCommandVsFile "wrap/length_wrap.sgml" "rb"
+test_length_wrap() {
+    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
-test_rb_none_wrap() {
-    assertDiffCommandVsFile "wrap/none_wrap.sgml" "rb"
-}
-
-test_rb_sentence_wrap() {
-    assertDiffCommandVsFile "wrap/sentence_wrap.sgml" "rb"
-}
-
-test_rb_wrap_only_normalized() {
-    assertDiffCommandVsFile "wrap/00014-wrap_only_normalized.sgml" "rb"
+test_none_wrap() {
+    assertEqualsMultipleCommandsVsFile "wrap/none_wrap.sgml" "pl" "rb" "java"
 }
 
 test_both_length_wrap() {
-    assertDiffCommandVsCommand "wrap/length_wrap.sgml" 
+    assertEqualsMultipleCommandsVsCommand "wrap/length_wrap.sgml" "pl" "rb" "java"
 }
 
 test_both_none_wrap() {
-    assertDiffCommandVsCommand "wrap/none_wrap.sgml" 
+    assertEqualsMultipleCommandsVsCommand "wrap/none_wrap.sgml"  "pl" "rb" "java"
 }
 
 test_both_sentence_wrap() {
-    assertDiffCommandVsCommand "wrap/sentence_wrap.sgml"
+    assertEqualsMultipleCommandsVsCommand "wrap/sentence_wrap.sgml" "pl" "rb" "java"
 }
 
-test_wrap_only_normalized() {
-    assertDiffCommandVsCommand "wrap/00014-wrap_only_normalized.sgml" 
+test_big_file(){
+    assertEqualsMultipleCommandsVsFile "big/howto.xml" "pl" "rb" "java"
+}
+
+test_missing_close(){
+    true
 }
 
 # shellcheck source=shunit2

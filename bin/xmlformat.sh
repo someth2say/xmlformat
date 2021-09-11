@@ -12,7 +12,7 @@ function has() {
 
 function autoDetectLang() {
   echo "Starting language autodetection."
-  has "perl" || has "ruby" || has "podman" ||  has "docker" || (echo "Unable to detect a supported language. ABORTING!" && exit 2)
+  has "perl" || has "ruby" || has "podman" ||  has "docker" || (echo "Unable to detect a supported language. Defaulting to Java (through JBang)"; language="java")
 }
 
 # Parameters
@@ -43,6 +43,8 @@ while getopts "l:f:vsuhoVpi" FLAG; do
 done
 shift $(($OPTIND - 1))
 
+## Main #######
+
 # If language not set by parameter, run language autodetection.
 [ -z "$language" ] && autoDetectLang
 
@@ -52,13 +54,21 @@ if [ -z "$cfg_file" ] ; then
   XMLFORMAT_ARGS="-f $cfg_file ${XMLFORMAT_ARGS}"
 fi
 
-# Verbosity level
+# Logging before formating
 (( verbose_flag > 0)) && echo "Configuration file: $cfg_file"
 (( verbose_flag > 1)) && XMLFORMAT_ARGS="-v ${XMLFORMAT_ARGS}"
 (( verbose_flag > 1)) && echo "Format arguments: $XMLFORMAT_ARGS"
+(( verbose_flag > 1)) && echo "Language: $language"
 
 (( errors=0 ))
-SCRIPT_OUTPUT=$("$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+if [ "$language" == "java" ]; then
+  # shellcheck disable=SC2068,SC2086
+  SCRIPT_OUTPUT=$("$script_folder/jbang" "$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+else
+  # shellcheck disable=SC2068,SC2086
+  SCRIPT_OUTPUT=$("$script_folder/xmlformat.$language" $XMLFORMAT_ARGS $@)
+fi
+
 errorcode=$?
 echo "$SCRIPT_OUTPUT"
 
