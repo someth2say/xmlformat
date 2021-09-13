@@ -2,96 +2,141 @@
 
 set +o posix
 set -u 
+TEST_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+BIN_PATH="${TEST_PATH}/../bin"
+
+buildCommandInto(){
+    local INTO=$1
+    local filename=$2
+    local lang=$3
+    local configFile=$4
+    
+    local COMMAND
+    if [ "$lang" == "java" ]; then
+        COMMAND="jbang ${BIN_PATH}/xmlformat.${lang}"
+    else
+        COMMAND="${BIN_PATH}/xmlformat.${lang}"
+    fi
+    
+    local EXTRAS
+    [ -n "$configFile" ] && EXTRAS=" -f ${configFile}"
+    
+    eval "${INTO}=\"$COMMAND $EXTRAS $filename\""
+}
 
 assertEqualsDiffCommandVsFile() {
-    filenames="$1"
-    lang="$2"
-    echo "$lang($filenames) vs $filenames.formatted"
-    if [ "$lang" == "java" ]; then
-        output=$(diff "${filenames}.formatted" <(jbang ../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
-    else
-        output=$(diff "${filenames}.formatted" <(../bin/xmlformat.${lang} -f ${filenames}.conf ${filenames} ) )
-    fi
+    local cmd="$1"
+    local file="$2"
+    echo Diffing \"$cmd\" vs \"$file\"
+    output=$(diff "$file" <($cmd) )
     exitcode=$?
     assertEquals "File diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
 assertEqualsDiffCommandVsCommand() {
-    filenames="$1"
-    lang1="$2"
-    lang2="$3"
-    if [ "$lang1" == "java" ]; then
-        output=$(diff <( jbang ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
-    else 
-        if [ "$lang2" == "java" ]; then
-            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( jbang ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
-        else
-            output=$(diff <( ../bin/xmlformat.${lang1} -f ${filenames}.conf ${filenames} ) <( ../bin/xmlformat.${lang2} -f ${filenames}.conf ${filenames} ) )
-        fi
-    fi
+    #  TODO: USE BUILT COMMANDS
+    local CMD1="$1"
+    local CMD2="$2"
+    
+    local output
+    echo Diffing \"$CMD1\" vs \"$CMD2\"
+
+    output=$(diff <($CMD1) <($CMD2))
     exitcode=$?
     assertEquals "Command diff does not match: \n${output}\n" 0 "${exitcode}"
 }
 
 
 assertEqualsMultipleCommandsVsCommand(){
-    XML_FILE="$1"
-    shift
-    for a; do
-        shift
-        for b; do
-            printf "%s - %s: %s\n" "$a" "$b" "$XML_FILE"
-            assertEqualsDiffCommandVsCommand "$XML_FILE" "$a" "$b" 
+    local XML_FILE="$1"
+    local configFile="$2"
+    local langs
+    IFS=" " read -r -a langs <<< "$3"
+
+    for((i=0;i<${#langs[@]}-1;++i)); do
+        local CMDA
+        buildCommandInto CMDA "$XML_FILE" "${langs[i]}" "$configFile"
+
+        for((j=i+1;j<${#langs[@]};++j)); do
+            local CMDB
+            buildCommandInto CMDB "$XML_FILE" "${langs[j]}" "$configFile"
+
+            assertEqualsDiffCommandVsCommand "$CMDA" "$CMDB" 
+
         done
     done
 }
 
 assertEqualsMultipleCommandsVsFile(){
-    XML_FILE="$1"
-    shift
-    for i in "$@"
-    do
-        assertEqualsDiffCommandVsFile "${XML_FILE}" "$i" || exit 1;
+    local XML_FILE="$1"
+    local configFile="$2"
+    local langs
+    IFS=" " read -r -a langs <<< "$3"
+
+    for i in "${langs[@]}"; do
+        local CMD
+        buildCommandInto CMD "$XML_FILE" "$i" "$configFile"
+        assertEqualsDiffCommandVsFile "$CMD" "${XML_FILE}.formatted" || exit 1;
     done
 }
 
 ########################################################
 
 test_length_wrap(){
-    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "wrap/length_wrap.sgml.conf" "pl rb java"
 }
 
 test_sentence_wrap() {
-    assertEqualsMultipleCommandsVsFile "wrap/sentence_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsFile "wrap/sentence_wrap.sgml" "wrap/sentence_wrap.sgml.conf" "pl rb java"
 }
 
 test_length_wrap() {
-    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsFile "wrap/length_wrap.sgml" "wrap/length_wrap.sgml.conf" "pl rb java"
 }
 
 test_none_wrap() {
-    assertEqualsMultipleCommandsVsFile "wrap/none_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsFile "wrap/none_wrap.sgml" "wrap/none_wrap.sgml.conf" "pl rb java"
 }
 
 test_both_length_wrap() {
-    assertEqualsMultipleCommandsVsCommand "wrap/length_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsCommand "wrap/length_wrap.sgml" "wrap/length_wrap.sgml.conf"  "pl rb java"
 }
 
 test_both_none_wrap() {
-    assertEqualsMultipleCommandsVsCommand "wrap/none_wrap.sgml"  "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsCommand "wrap/none_wrap.sgml" "wrap/none_wrap.sgml.conf" "pl rb java"
 }
 
 test_both_sentence_wrap() {
-    assertEqualsMultipleCommandsVsCommand "wrap/sentence_wrap.sgml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsCommand "wrap/sentence_wrap.sgml" "wrap/sentence_wrap.sgml.conf" "pl rb java"
 }
 
 test_big_file(){
-    assertEqualsMultipleCommandsVsFile "big/howto.xml" "pl" "rb" "java"
+    assertEqualsMultipleCommandsVsFile "big/howto.xml" "big/howto.xml.conf" "pl rb java"
 }
 
-test_missing_close(){
-    true
+#test_missing_close(){
+    # TODO
+#}
+
+# Test 0: no-config source defined -> default config
+test_no_confg_source() {
+   pushd config/folder_without_config || fail "$@"
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java"
+   popd || fail "$@"
 }
+
+# Test 1: Parameter over default config
+
+# Test 2: local over parameter and default config
+
+# Test 3: XDG_CONFIG_HOME over local config, parameter and default config
+
+# Test 4: XMLFORMAT_CONF over XDG_CONFIG_HOME, local, parameter and default config
+
+
+
+# Source test sub-modules
+source config/test.sh
 
 # shellcheck source=shunit2
 . ./shunit2

@@ -1446,6 +1446,18 @@ public class xmlformat {
     // ----------------------------------------------------------------------
 
     // Begin main program
+    private static boolean try_config_file(final xmlformat xf, String config_file) throws ParseException, IOException {
+        if (config_file!=null){
+            if (Files.isDirectory(Paths.get(config_file))) {
+                config_file=config_file.concat("/xmlformat.conf");
+            }
+            if (Files.isReadable(Paths.get(config_file))) {
+                xf.read_config(config_file);
+                return true;
+            }
+        }
+        return false;
+    }
 
     public static void main(String... args) throws ParseException, IOException {
 
@@ -1489,7 +1501,7 @@ public class xmlformat {
 
         var help = false;
         String backup_suffix = null;
-        String conf_file = null;
+        String arg_conf_file = null;
         var canonize_only = false;
         var check_parser = false;
         var in_place = false;
@@ -1523,7 +1535,7 @@ public class xmlformat {
                 case "check-parser":
                     check_parser = true; break;
                 case "config-file":
-                    conf_file = opt.getValue(); break;
+                    arg_conf_file = opt.getValue(); break;
                 case "in-place":
                     in_place = true; break;
                 case "show-config":
@@ -1569,33 +1581,33 @@ public class xmlformat {
         var xf = new xmlformat();
 
         var env_conf_file = System.getenv("XMLFORMAT_CONF");
-        var def_conf_file = "./xmlformat.conf";
+        var xdg_conf_file = System.getenv("XDG_CONFIG_HOME")!=null?System.getenv("XDG_CONFIG_HOME")+"/xmlformat.conf":null;
+        var pwd_conf_file = "./xmlformat.conf";
 
-        // If no config file was named, but XMLFORMAT_CONF is set, use its value
-        // as the config file name.
-        if ((conf_file==null) && (env_conf_file!=null)){
-            warn("No config file provided. Using envvar XMLFORMAT_CONF: "+env_conf_file);
-            conf_file = env_conf_file;
+        // If a config file was named, we must use it as the config file.
+        if (arg_conf_file!=null) {
+            if (verbose) warn("Reading configuration file "+arg_conf_file+"\n");
+            if (!Files.isReadable(Paths.get(arg_conf_file))) {
+                die("Configuration file '"+arg_conf_file+"' is not readable.\n");
+            }
+            if (Files.isDirectory(Paths.get(arg_conf_file))) {
+                die("Configuration file '"+arg_conf_file+"' is a directory.\n");
+            }
+            xf.read_config(arg_conf_file);
+           // Config source priority 1) $XMLFORMAT_CONF env_var
+        } else if (try_config_file(xf,env_conf_file)) {
+            warn("Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file);
+        // Config source priority 2) $XDG_CONFIG_HOME env_var folder
+        } else if (try_config_file(xf,xdg_conf_file)) {
+            warn("Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file);
+        // Config source priority 3) current folder
+        } else if (try_config_file(xf,pwd_conf_file)) {
+            warn("Using configuration from current directory: " + pwd_conf_file);
+        // Config source priority 4) Defaults
+        } else {
+            warn("No configuration file found. Using defaults");
         }
 
-        // If config file still isn't defined, use the default file if it exists.
-        if (conf_file==null){
-            if (Files.isReadable(Paths.get(def_conf_file)) && !Files.isDirectory(Paths.get(def_conf_file))) {
-                    warn("No config file provided. Defaulting to: " + def_conf_file);
-                    conf_file = def_conf_file;
-            }
-        }
-
-        if (conf_file!=null) {
-            if (verbose) warn("Reading configuration file "+conf_file+"\n");
-            if (!Files.isReadable(Paths.get(conf_file))) {
-                die("Configuration file '"+conf_file+"' is not readable.\n");
-            }
-            if (Files.isDirectory(Paths.get(conf_file))) {
-                die("Configuration file '"+conf_file+"' is a directory.\n");
-            }
-            xf.read_config(conf_file);
-        }
 
         if (show_conf)  {      // show configuration and exit
             xf.display_config();
