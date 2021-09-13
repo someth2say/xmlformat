@@ -1,5 +1,4 @@
 #! /bin/bash
 
 set +o posix
-set -u 
-
+set -u

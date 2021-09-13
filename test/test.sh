@@ -1,7 +1,7 @@
 #! /bin/bash
 
 set +o posix
-set -u 
+set -u
 TEST_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 BIN_PATH="${TEST_PATH}/../bin"
 
@@ -10,17 +10,17 @@ buildCommandInto(){
     local filename=$2
     local lang=$3
     local configFile=$4
-    
+
     local COMMAND
     if [ "$lang" == "java" ]; then
         COMMAND="jbang ${BIN_PATH}/xmlformat.${lang}"
     else
         COMMAND="${BIN_PATH}/xmlformat.${lang}"
     fi
-    
+
     local EXTRAS
     [ -n "$configFile" ] && EXTRAS=" -f ${configFile}"
-    
+
     eval "${INTO}=\"$COMMAND $EXTRAS $filename\""
 }
 
@@ -37,7 +37,7 @@ assertEqualsDiffCommandVsCommand() {
     #  TODO: USE BUILT COMMANDS
     local CMD1="$1"
     local CMD2="$2"
-    
+
     local output
     echo Diffing \"$CMD1\" vs \"$CMD2\"
 
@@ -61,7 +61,7 @@ assertEqualsMultipleCommandsVsCommand(){
             local CMDB
             buildCommandInto CMDB "$XML_FILE" "${langs[j]}" "$configFile"
 
-            assertEqualsDiffCommandVsCommand "$CMDA" "$CMDB" 
+            assertEqualsDiffCommandVsCommand "$CMDA" "$CMDB"
 
         done
     done

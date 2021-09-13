@@ -30,7 +30,7 @@ while getopts "l:f:vsuhoVpi" FLAG; do
       [ -z "$cfg_file" ] && (>&2 echo "Unable to reach configuration file: $OPTARG" ; exit 4 )
       XMLFORMAT_ARGS="-$FLAG ${XMLFORMAT_ARGS}"
       ;;
-    v) 
+    v)
       (( verbose_flag++ ))
       ;;
     s|u|h|o|V|p)
@@ -50,7 +50,7 @@ shift $(($OPTIND - 1))
 
 # Default configuration
 #if [ -z "$cfg_file" ] ; then
-#  cfg_file="${XMLFORMAT_CONF:-$script_folder/xmlformat.conf}" 
+#  cfg_file="${XMLFORMAT_CONF:-$script_folder/xmlformat.conf}"
 #  XMLFORMAT_ARGS="-f $cfg_file ${XMLFORMAT_ARGS}"
 #fi
 
@@ -75,7 +75,7 @@ echo "$SCRIPT_OUTPUT"
 if [[ $errorcode != 0 ]]; then
   >&2 echo "Error while formatting files ($errorcode):"
   (( errors+=1 ))
-else 
+else
   (( verbose_flag > 0)) && >&2 echo "Formatting complete."
 fi
 
@@ -85,4 +85,3 @@ if [[ $errors != 0 ]] ; then
 fi
 
 exit 0
-

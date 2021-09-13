@@ -41,7 +41,7 @@ To be precise, it tries the following runnable commands:
 * `podman`
 * `docker`
 
-The two further will execute the language-based version of the formatter. The two later will use `podman` or `docker` container runtimes to execute the latest container at quay.io/someth2say/xmlformat:latest. 
+The two further will execute the language-based version of the formatter. The two later will use `podman` or `docker` container runtimes to execute the latest container at quay.io/someth2say/xmlformat:latest.
 
 > :information_source: The containerized versions will *always* execute the ruby version of the application inside the container.
 

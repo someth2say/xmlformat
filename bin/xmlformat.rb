@@ -1272,7 +1272,7 @@ class XMLFormatter
   # first_indent - indent for first line
   # rest_indent - indent for any remaining lines
   # max_len - maximum length of output lines (including indent)
-  
+
   def line_wrap(strs, first_indent, rest_indent, wrap_type, max_len)
 
     # First, tokenize the strings
@@ -1313,7 +1313,7 @@ class XMLFormatter
     # saved-up whitespace to put before next non-white word
     white = ""
     prev_word = ""
-  
+
     words2.each do |word|            # ... while words remain to wrap
       # If word is whitespace, save it. It gets added before next
       # word if no line-break occurs.
@@ -1360,10 +1360,10 @@ class XMLFormatter
       llen += white.length + wlen
       white = ""
     end
-  
+
     # push remaining line, if any
     lines << line unless line.empty?
-  
+
     return lines
   end
   private :line_wrap
