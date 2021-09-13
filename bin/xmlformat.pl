@@ -1583,6 +1583,22 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
 
 package main;
 
+use constant { true => 1, false => 0}; 
+
+sub try_config_file
+{
+my ($xf, $config_file) = @_;
+  if ( defined $config_file )
+  {
+    $config_file = $config_file . "/xmlformat.conf" if ( -d $config_file ); 
+    if (-r $config_file) 
+    {
+      $xf->read_config($config_file);
+      return true;
+    } 
+  }
+  return false;
+}
 
 my $usage = <<EOF;
 Usage: $PROG_NAME [options] xml-file
@@ -1626,7 +1642,7 @@ EOF
 # Variables for command line options; most are undefined initially.
 my $help;
 my $backup_suffix;
-my $conf_file;
+my $arg_conf_file;
 my $canonize_only;
 my $check_parser;
 my $in_place;
@@ -1643,7 +1659,7 @@ GetOptions (
   "backup|b=s"                   => \$backup_suffix, # make backup using suffix
   "canonized-output|o"           => \$canonize_only, # print canonized document
   "check-parser|p"               => \$check_parser,  # verify parser integrity
-  "config-file|f=s"              => \$conf_file,     # config file
+  "config-file|f=s"              => \$arg_conf_file,     # config file
   "in-place|i"                   => \$in_place,      # format in place
   "show-config|s"                => \$show_conf,     # show configuration file
   # need better name
@@ -1694,30 +1710,37 @@ my $xf = XMLFormat->new ();
 
 # If no configuration file can be found at all, the built-in default options
 # are used. (These are set up in new().)
+my $env_conf_file = $ENV{XMLFORMAT_CONF} if defined $ENV{XMLFORMAT_CONF};
+my $xdg_conf_file = $ENV{XDG_CONFIG_HOME} if defined $ENV{XDG_CONFIG_HOME};
+my $pwd_conf_file = ".";
 
-my $env_conf_file = $ENV{XMLFORMAT_CONF};
-my $def_conf_file = "./xmlformat.conf";
-
-# If no config file was named, but XMLFORMAT_CONF is set, use its value
-# as the config file name.
-if (!defined ($conf_file))
+# If a config file was named, we must use it as the config file.
+if (defined $arg_conf_file)
 {
-  $conf_file = $env_conf_file if defined ($env_conf_file);
+  warn "Reading configuration file $arg_conf_file...\n" if $verbose;
+  die "Configuration file '$arg_conf_file' is not readable.\n" if ! -r $arg_conf_file;
+  die "Configuration file '$arg_conf_file' is a directory.\n"  if -d $arg_conf_file;
+  $xf->read_config ($arg_conf_file)
+} 
+# Config source priority 1) $XMLFORMAT_CONF env_var
+elsif ( try_config_file ($xf, $env_conf_file) )
+{
+ warn "Using configuration from environment variable XMLFORMAT_CONF: " . $env_conf_file;
+} 
+# Config source priority 2) $XDG_CONFIG_HOME env_var folder
+elsif ( try_config_file ($xf, $xdg_conf_file) )
+{
+  warn "Using configuration from environment variable XDG_CONFIG_HOME: " . $xdg_conf_file;
 }
-# If config file still isn't defined, use the default file if it exists.
-if (!defined ($conf_file))
+# Config source priority 3) current folder
+elsif ( try_config_file ($xf, $pwd_conf_file) )
 {
-  if (-r $def_conf_file && ! -d $def_conf_file)
-  {
-    $conf_file = $def_conf_file;
-  }
+  warn "Using configuration from current directory: " . $pwd_conf_file;
 }
-if (defined ($conf_file))
+# Config source priority 4) Defaults
+else
 {
-  warn "Reading configuration file $conf_file...\n" if $verbose;
-  die "Configuration file '$conf_file' is not readable.\n" if ! -r $conf_file;
-  die "Configuration file '$conf_file' is a directory.\n"  if -d $conf_file;
-  $xf->read_config ($conf_file)
+  warn "No configuration file found. Using defaults";
 }
 
 if ($show_conf)   # show configuration and exit

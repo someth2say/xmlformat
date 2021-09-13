@@ -1378,6 +1378,20 @@ end # module XMLFormat
 
 include XMLFormat
 
+def try_config_file(xf, config_file)
+  if (!config_file.nil?)
+    if FileTest.directory?(config_file)
+      config_file = "#{config_file}/xmlformat.conf"
+    end
+    if FileTest.readable?(config_file)
+      xf.read_config(config_file)
+      return true
+    end
+  end
+  return false
+end
+private :try_config_file
+
 usage = "Usage: #{__dir__} #{PROG_NAME} [options] xml-file
 
 Options:
@@ -1418,7 +1432,7 @@ Options:
 
 help = false
 backup_suffix = nil
-conf_file = nil
+arg_conf_file = nil
 canonize_only = false
 check_parser = false
 in_place = false
@@ -1452,7 +1466,7 @@ opts.each do |opt, arg|
   when "--check-parser"
     check_parser = true
   when "--config-file"
-    conf_file = arg
+    arg_conf_file = arg
   when "--in-place"
     in_place = true
   when "--show-config"
@@ -1498,33 +1512,32 @@ end
 
 xf = XMLFormatter.new
 
-env_conf_file = ENV["XMLFORMAT_CONF"]
-def_conf_file = "#{__dir__}/xmlformat.conf"
+env_conf_file = ENV["XMLFORMAT_CONF"] if defined? ENV["XMLFORMAT_CONF"]
+xdg_conf_file = "#{ENV["XDG_CONFIG_HOME"]}/xmlformat.conf" if defined? ENV["XDG_CONFIG_HOME"]
+pwd_conf_file = "./xmlformat.conf"
 
-# If no config file was named, but XMLFORMAT_CONF is set, use its value
-# as the config file name.
-if conf_file.nil? && !env_conf_file.nil?
-  warn "No config file provided. Using envvar XMLFORMAT_CONF: "+env_conf_file 
-  conf_file = env_conf_file
-end
-
-# If config file still isn't defined, use the default file if it exists.
-if conf_file.nil?
-  if FileTest.readable?(def_conf_file) && !FileTest.directory?(def_conf_file)
-    warn "No config file provided. Defaulting to: "+def_conf_file 
-    conf_file = def_conf_file
+# If a config file was named, we must use it as the config file.
+if !arg_conf_file.nil?
+  warn "Reading configuration file #{arg_conf_file}\n" if verbose
+  if !FileTest.readable?(arg_conf_file)
+    die "Configuration file '#{arg_conf_file}' is not readable.\n";
   end
-end
-
-if !conf_file.nil?
-  warn "Reading configuration file #{conf_file}\n" if verbose
-  if !FileTest.readable?(conf_file)
-    die "Configuration file '#{conf_file}' is not readable.\n";
+  if FileTest.directory?(arg_conf_file)
+    die "Configuration file '#{arg_conf_file}' is a directory.\n";
   end
-  if FileTest.directory?(conf_file)
-    die "Configuration file '#{conf_file}' is a directory.\n";
-  end
-  xf.read_config(conf_file)
+  xf.read_config(arg_conf_file)
+# Config source priority 1) $XMLFORMAT_CONF env_var
+elsif try_config_file(xf, env_conf_file)
+  warn "Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file;
+# Config source priority 2) $XDG_CONFIG_HOME env_var folder
+elsif try_config_file(xf, xdg_conf_file)
+  warn "Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file;
+# Config source priority 3) current folder
+elsif try_config_file(xf, pwd_conf_file)
+  warn "Using configuration from current directory: " + pwd_conf_file;
+# Config source priority 4) Defaults
+else
+  warn "No configuration file found. Using defaults";
 end
 
 if show_conf        # show configuration and exit
