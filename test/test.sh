@@ -2,6 +2,7 @@
 
 set +o posix
 set -u
+
 TEST_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 BIN_PATH="${TEST_PATH}/../bin"
 

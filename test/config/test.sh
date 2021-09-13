@@ -2,3 +2,4 @@
 
 set +o posix
 set -u
+

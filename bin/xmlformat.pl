@@ -1585,6 +1585,7 @@ package main;
 
 use constant { true => 1, false => 0};
 
+
 sub try_config_file
 {
 my ($xf, $config_file) = @_;
@@ -1596,6 +1597,7 @@ my ($xf, $config_file) = @_;
       $xf->read_config($config_file);
       return true;
     }
+
   }
   return false;
 }
