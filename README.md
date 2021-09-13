@@ -40,8 +40,9 @@ To be precise, it tries the following runnable commands:
 * `ruby`
 * `podman`
 * `docker`
+* `java` (through Jbang)
 
-The two further will execute the language-based version of the formatter. The two later will use `podman` or `docker` container runtimes to execute the latest container at quay.io/someth2say/xmlformat:latest.
+`perl`,`ruby` and `java` will execute the language-based version of the formatter. `podman` or `docker` will use the appropriate container runtime to execute the latest container at quay.io/someth2say/xmlformat:latest.
 
 > :information_source: The containerized versions will *always* execute the ruby version of the application inside the container.
 
@@ -61,26 +62,27 @@ Just add the hook reference to your `.pre-commit-config.yaml` file:
 ```
 repos:
   - repo: https://github.com/someth2say/xmlformat
-    rev: 0.4
+    rev: 0.5
     hooks:
       - id: xmlformat
 ```
+
 The same way as you can do with the `bin/xmlformat.sh`, you can select your runtime and many other option by passing hook arguments:
 
 ```
 repos:
   - repo: https://github.com/someth2say/xmlformat
-    rev: 0.4
+    rev: 0.5
     hooks:
       - id: xmlformat
-        args: ["-i","-l","podman"]
+        args: ["-i","-l","java"]
 
 ```
 > :warning: If you provide `args` to your hook reference, then always provide the `-i` argument to make sure your files are updated. Else, the files will not be modified, and the hook will never fail.
 
-If the only argument you are passing is the language, you can alternatively use the pre-defined hooks: `xmlformat_ruby`, `xmlformat_perl`, `xmlformat_podman`, and `xmlformat_docker`
+If the only argument you are passing is the language, you can alternatively use the pre-defined hooks: `xmlformat_ruby`, `xmlformat_perl`, `xmlformat_java`, `xmlformat_podman`, and `xmlformat_docker`
 
-# Configuration
+# Configuration format
 The default formatting rules applied by `XMLFormat` are highly opinionated, and target the DocBook XML format.
 
 You can create your own formatting rules in a configuration file and passing it to the formatter. The format of the configuration file is based on the format described [here](https://github.com/someth2say/xmlformat/blob/master/docs.md), with the following additions:
@@ -97,18 +99,25 @@ para
   entry-break = 1
   subindent = 2
   normalize = yes
+  wrap-type = sentence
 ```
 
 > :information_source: The `*DEFAULT` entry in a configuration file applies the formatting settings to all tags.
 
 Once you have the configuration ready, use the `-f` option to provide the file to the formatter:
 
-
 ```
 # bin/xmlformat.sh -f myconfig.conf test/test_base.xml
 ```
 
+# Configuration sources
+XMLFormat will look for configuration files in the following order:
 
+1) If the `-f` option is provided, then the parameter file will be used. If the file do not exist or is not readable, then the program will exit.
+2) Else, it looks the file in the `XMLFORMAT_CONF` environment variable, or for a `xmlformat.conf` file in the `XMLFORMAT_CONF` folder.
+3) Else, it looks the file in the `XDG_CONFIG_HOME` environment variable, or for a `xmlformat.conf` file in the `XDG_CONFIG_HOME` folder.
+4) Else, it looks for a `xmlformat.conf` file in the current folder (pwd).
+5) Else, it defaults to the embedded configuration.
 # Arguments
 The following arguments are accepted by `XMLFormat`:
 * `-l [lang]`: Sets the execution language or container infrastructure
