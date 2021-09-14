@@ -1513,9 +1513,8 @@ end
 xf = XMLFormatter.new
 
 env_conf_file = ENV["XMLFORMAT_CONF"] if defined? ENV["XMLFORMAT_CONF"]
-xdg_conf_file = "#{ENV["XDG_CONFIG_HOME"]}/xmlformat.conf" if defined? ENV["XDG_CONFIG_HOME"]
+xdg_conf_file = ENV["XDG_CONFIG_HOME"] if defined? ENV["XDG_CONFIG_HOME"]
 pwd_conf_file = "./xmlformat.conf"
-
 # If a config file was named, we must use it as the config file.
 if !arg_conf_file.nil?
   warn "Reading configuration file #{arg_conf_file}\n" if verbose

@@ -1581,7 +1581,7 @@ public class xmlformat {
         var xf = new xmlformat();
 
         var env_conf_file = System.getenv("XMLFORMAT_CONF");
-        var xdg_conf_file = System.getenv("XDG_CONFIG_HOME")!=null?System.getenv("XDG_CONFIG_HOME")+"/xmlformat.conf":null;
+        var xdg_conf_file = System.getenv("XDG_CONFIG_HOME");
         var pwd_conf_file = "./xmlformat.conf";
 
         // If a config file was named, we must use it as the config file.
