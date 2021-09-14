@@ -127,7 +127,7 @@ __detect(){
 
     # Container runtimes
     docker|podman)          __dynamic_detect--version "${command}" ;;
-    
+
     ## Database CLI
     psql)                   __dynamic_detect--version "${command}" ;;
 

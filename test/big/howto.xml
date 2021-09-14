@@ -361,7 +361,7 @@ Schematron schemas.</para>
 	<entry>&yes;</entry>
 	<entry>&no;</entry>
 	<entry>&yes;</entry>
-      </row>        
+      </row>
     </tbody>
   </tgroup>
 </table>
@@ -576,10 +576,10 @@ xl:href="http://relaxng.org/#validators"/>. It is best to use
 validators with support for embedded Schematron rules inside RELAX NG
 schemas. Schematron is a rule-based validation language which is used
 to impose additional constraints on DocBook documents. Schematron rules
-assert conditions which are impossible or difficult to express 
+assert conditions which are impossible or difficult to express
 in a pure RELAX NG schema.</para>
 
-<para><application xl:href="https://msv.dev.java.net/">Sun 
+<para><application xl:href="https://msv.dev.java.net/">Sun
 Multi-Schema XML Validator (MSV)</application> is able to validate an XML
 document against a RELAX NG schema and Schematron rules at the same time.
 To install and use MSV follow these steps:</para>
@@ -618,7 +618,7 @@ RELAX NG schema with embedded Schematron rules.</para>
 <section>
 <title>Using NVDL</title>
 
-<para>NVDL is a meta-schema language which can validate a document 
+<para>NVDL is a meta-schema language which can validate a document
 against several schemas. DocBook V5.0 comes with a NVDL
 schema which specifies that DocBook documents should be validated
 against both RELAX NG and Schematron schemas.</para>
@@ -695,7 +695,7 @@ the note about the lost base URI below).</para>
 <para>During document processing, the stylesheets strip
 namespaces from DocBook V5.0 to get a document which will be
 very similar to DocBook V4.x. This is necessary because from the XSLT
-point of view, elements from different namespaces are distinct and cannot 
+point of view, elements from different namespaces are distinct and cannot
 be easily processed by the same set of templates. This process is
 completely transparent to the user. If you are processing DocBook V5.0
 documents, the only difference is that you will see the following
@@ -717,8 +717,8 @@ features. The unsupported features include:</para>
 <para>During namespace stripping, the base URI of the document is
 lost. This means that in rare situations, relatively referenced
 resources like images or programlistings can be processed incorrectly.
-The stylesheets attempt to compensate for this problem, but that is not always 
-possible. When an XSLT processor other than Saxon or Xalan is used, a warning 
+The stylesheets attempt to compensate for this problem, but that is not always
+possible. When an XSLT processor other than Saxon or Xalan is used, a warning
 message is generated:
 
 <screen>WARNING: cannot add @xml:base to node set root element. Relative paths may not work.</screen>
@@ -813,7 +813,7 @@ to comply with <citation>XMLID</citation>.</para>
 
 <para>Now you can use almost any inline element as the source of a link,
 not just <tag>xref</tag> or <tag>link</tag>. For example, the following
-DocBook 4.x content:</para> 
+DocBook 4.x content:</para>
 
 <programlisting><![CDATA[<section id="dir">
   <title>DIR command</title>
@@ -844,11 +844,11 @@ element as the source of a hypertext link. To use XLinks you have
 to declare the XLink namespace (most often on the root element of your
 document):</para>
 
-<programlisting><![CDATA[<article xmlns="http://docbook.org/ns/docbook" 
+<programlisting><![CDATA[<article xmlns="http://docbook.org/ns/docbook"
          xmlns:xl="http://www.w3.org/1999/xlink" version="5.0">
   <title>Test article</title>
 
-  <para><application xl:href="http://www.gnu.org/software/emacs/emacs.html">Emacs</application> 
+  <para><application xl:href="http://www.gnu.org/software/emacs/emacs.html">Emacs</application>
     is my favourite text editor.</para>]]>
   …</programlisting>
 
@@ -862,7 +862,7 @@ element:</para>
 
 <programlisting><![CDATA[<link xl:href="https://docbook.org">DocBook site</link>]]></programlisting>
 
-<para>XLink links may contain a fragment identifier, which you can 
+<para>XLink links may contain a fragment identifier, which you can
 use instead of <tag class="attribute">linkend</tag> to form
 cross-references inside a document; for example:</para>
 
@@ -1069,7 +1069,7 @@ experience.)</para>
 <title>What About Entities?</title>
 
 <para>Using XSLT to transform existing documents to DocBook V5.0 has
-one potential disadvantage: it removes all entity references from 
+one potential disadvantage: it removes all entity references from
 your document.</para>
 
 <para>If preserving entities is an important aspect of your production
@@ -1491,7 +1491,7 @@ db.author |= dbx.person]]></programlisting>
       adds two new elements by combining them into
       a higher level pattern.  In this example, we'll add
       two new inline elements for writing about assembly language,
-      <tag condition="nolink">register</tag> and 
+      <tag condition="nolink">register</tag> and
       <tag condition="nolink">instruction</tag>.
       We will allow them wherever programming inlines
       or operating system inlines are allowed.
@@ -1500,7 +1500,7 @@ db.author |= dbx.person]]></programlisting>
       (<varname>dbx.asm.inlines</varname>) that contains them, and adds
       that pattern to <varname>db.programming.inlines</varname> and
       <varname>db.os.inlines</varname>.  Since these two patterns
-      don't have any elements in common, the strategy used in 
+      don't have any elements in common, the strategy used in
       <xref linkend="ex-add-element-1" xrefstyle="select: label"/>
       would require selecting two different elements to <quote>clone</quote>,
       which would be messy.
@@ -1714,8 +1714,8 @@ db.author.attlist &=
       <xref linkend="ex-add-attr-2" xrefstyle="select: label"/> shows
       how you could limit the use of these attributes to authors who
       are persons.  In this example, the new attributes are interleaved
-      with the <varname>db.person.author.contentmodel</varname>.  
-      The only difference between this example and 
+      with the <varname>db.person.author.contentmodel</varname>.
+      The only difference between this example and
       <xref linkend="ex-modify-element" xrefstyle="select: label"/> is
       that the added patterns are identified as attributes rather than
       elements.  This shows some of the flexibility of RELAX NG, which
@@ -1754,7 +1754,7 @@ There is one difference in the treatment of attributes and elements
 that is worth noting.  By the XML 1.0 definition, the relative order
 of attributes is not significant.  Therefore, the
 <tag condition="nolink">interleave</tag> block is not required for
-attributes, though it does no harm.  
+attributes, though it does no harm.
     </para>
     </section>
     <section xml:id="cust-delete-attributes">
@@ -2278,7 +2278,7 @@ Nálevka, Petr:
 
 <bibliomixed>
 <abbrev>XMLID</abbrev>
-Marsh, Jonathan – 
+Marsh, Jonathan –
 Veillard, Daniel –
 Walsh, Norman: <title>xml:id Version 1.0</title>. W3C Recommendation, 9 September 2005. <bibliomisc><link xl:href="http://www.w3.org/TR/xml-id/"/></bibliomisc>
 </bibliomixed>

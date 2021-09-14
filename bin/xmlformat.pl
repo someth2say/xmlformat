@@ -1,4 +1,4 @@
-#! /usr/bin/perl -w 
+#! /usr/bin/perl -w
 # vim:set ts=2 sw=2 expandtab:
 
 # xmlformat - configurable XML file formatter/pretty-printer
@@ -727,7 +727,7 @@ my $str;
 # Parse XML document into array of tokens and store array
 
 sub shallow_parse
-{ 
+{
 my ($self, $xml_document) = @_;
 
   $self->{tokens} = [ $xml_document =~ /$XML_SPE/g ];
@@ -1583,19 +1583,21 @@ my ($self, $strs, $first_indent, $rest_indent, $wrap_type, $max_len) = @_;
 
 package main;
 
-use constant { true => 1, false => 0}; 
+use constant { true => 1, false => 0};
+
 
 sub try_config_file
 {
 my ($xf, $config_file) = @_;
   if ( defined $config_file )
   {
-    $config_file = $config_file . "/xmlformat.conf" if ( -d $config_file ); 
-    if (-r $config_file) 
+    $config_file = $config_file . "/xmlformat.conf" if ( -d $config_file );
+    if (-r $config_file)
     {
       $xf->read_config($config_file);
       return true;
-    } 
+    }
+
   }
   return false;
 }
@@ -1721,26 +1723,26 @@ if (defined $arg_conf_file)
   die "Configuration file '$arg_conf_file' is not readable.\n" if ! -r $arg_conf_file;
   die "Configuration file '$arg_conf_file' is a directory.\n"  if -d $arg_conf_file;
   $xf->read_config ($arg_conf_file)
-} 
+}
 # Config source priority 1) $XMLFORMAT_CONF env_var
 elsif ( try_config_file ($xf, $env_conf_file) )
 {
- warn "Using configuration from environment variable XMLFORMAT_CONF: " . $env_conf_file;
-} 
+ warn "Using configuration from environment variable XMLFORMAT_CONF: " . $env_conf_file if $verbose;
+}
 # Config source priority 2) $XDG_CONFIG_HOME env_var folder
 elsif ( try_config_file ($xf, $xdg_conf_file) )
 {
-  warn "Using configuration from environment variable XDG_CONFIG_HOME: " . $xdg_conf_file;
+  warn "Using configuration from environment variable XDG_CONFIG_HOME: " . $xdg_conf_file if $verbose;
 }
 # Config source priority 3) current folder
 elsif ( try_config_file ($xf, $pwd_conf_file) )
 {
-  warn "Using configuration from current directory: " . $pwd_conf_file;
+  warn "Using configuration from current directory: " . $pwd_conf_file if $verbose;
 }
 # Config source priority 4) Defaults
 else
 {
-  warn "No configuration file found. Using defaults";
+  warn "No configuration file found. Using defaults" if $verbose;
 }
 
 if ($show_conf)   # show configuration and exit

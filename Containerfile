@@ -8,7 +8,7 @@ LABEL maintainer="Jordi Sola <jordisola@redhat.com>" \
       summary="UBI8 based image containing perl and ruby interpreters" \
       io.k8s.description="UBI8 based image containing perl and ruby interpreters" \
       io.k8s.display-name="ubi8-perl-ruby" \
-      io.openshift.tags="perl ruby" 
+      io.openshift.tags="perl ruby"
 
 
 # Install perl and ruby interpreter
@@ -20,9 +20,9 @@ RUN microdnf update -y && \
 FROM ubi8-perl-ruby
 
 # Docker arguments to facilitate image extension
-ARG SCRIPTS_DIR="/bin" 
+ARG SCRIPTS_DIR="/bin"
 ARG EXTRA_ARGS=""
-ARG CFG_FILE="${SCRIPTS_DIR}/xmlformat.conf" 
+ARG CFG_FILE="${SCRIPTS_DIR}/xmlformat.conf"
 
 LABEL \
     name="XMLFormat" \
@@ -39,7 +39,7 @@ LABEL \
     org.label-schema.schema-version="1.0" \
     io.k8s.description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
     io.k8s.display-name="XMLFormat" \
-    io.openshift.tags="xml format perl ruby" 
+    io.openshift.tags="xml format perl ruby"
 
 
 # Environment to be used by the xmlformat.sh script

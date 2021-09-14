@@ -1272,7 +1272,7 @@ class XMLFormatter
   # first_indent - indent for first line
   # rest_indent - indent for any remaining lines
   # max_len - maximum length of output lines (including indent)
-  
+
   def line_wrap(strs, first_indent, rest_indent, wrap_type, max_len)
 
     # First, tokenize the strings
@@ -1313,7 +1313,7 @@ class XMLFormatter
     # saved-up whitespace to put before next non-white word
     white = ""
     prev_word = ""
-  
+
     words2.each do |word|            # ... while words remain to wrap
       # If word is whitespace, save it. It gets added before next
       # word if no line-break occurs.
@@ -1360,10 +1360,10 @@ class XMLFormatter
       llen += white.length + wlen
       white = ""
     end
-  
+
     # push remaining line, if any
     lines << line unless line.empty?
-  
+
     return lines
   end
   private :line_wrap
@@ -1513,9 +1513,8 @@ end
 xf = XMLFormatter.new
 
 env_conf_file = ENV["XMLFORMAT_CONF"] if defined? ENV["XMLFORMAT_CONF"]
-xdg_conf_file = "#{ENV["XDG_CONFIG_HOME"]}/xmlformat.conf" if defined? ENV["XDG_CONFIG_HOME"]
+xdg_conf_file = ENV["XDG_CONFIG_HOME"] if defined? ENV["XDG_CONFIG_HOME"]
 pwd_conf_file = "./xmlformat.conf"
-
 # If a config file was named, we must use it as the config file.
 if !arg_conf_file.nil?
   warn "Reading configuration file #{arg_conf_file}\n" if verbose
@@ -1528,16 +1527,16 @@ if !arg_conf_file.nil?
   xf.read_config(arg_conf_file)
 # Config source priority 1) $XMLFORMAT_CONF env_var
 elsif try_config_file(xf, env_conf_file)
-  warn "Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file;
+  warn "Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file if verbose
 # Config source priority 2) $XDG_CONFIG_HOME env_var folder
 elsif try_config_file(xf, xdg_conf_file)
-  warn "Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file;
+  warn "Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file if verbose
 # Config source priority 3) current folder
 elsif try_config_file(xf, pwd_conf_file)
-  warn "Using configuration from current directory: " + pwd_conf_file;
+  warn "Using configuration from current directory: " + pwd_conf_file if verbose
 # Config source priority 4) Defaults
 else
-  warn "No configuration file found. Using defaults";
+  warn "No configuration file found. Using defaults" if verbose
 end
 
 if show_conf        # show configuration and exit

@@ -1002,11 +1002,11 @@ xl:href="http://saxon.sf.net"/>
         To use XLinks you have to declare the XLink namespace (most often on the root element of your document):
       </para>
       <programlisting>
-<![CDATA[<article xmlns="http://docbook.org/ns/docbook" 
+<![CDATA[<article xmlns="http://docbook.org/ns/docbook"
          xmlns:xl="http://www.w3.org/1999/xlink" version="5.0">
   <title>Test article</title>
 
-  <para><application xl:href="http://www.gnu.org/software/emacs/emacs.html">Emacs</application> 
+  <para><application xl:href="http://www.gnu.org/software/emacs/emacs.html">Emacs</application>
     is my favourite text editor.</para>]]>
   …</programlisting>
       <para>
@@ -2612,7 +2612,7 @@ Nálevka, Petr:
     </bibliomixed>
     <bibliomixed>
       <abbrev>XMLID</abbrev>
-Marsh, Jonathan – 
+Marsh, Jonathan –
 Veillard, Daniel –
 Walsh, Norman: <title>xml:id Version 1.0</title>. W3C Recommendation, 9 September 2005. <bibliomisc>
         <link xl:href="http://www.w3.org/TR/xml-id/"/>

@@ -1,7 +1,8 @@
 #! /bin/bash
 
 set +o posix
-set -u 
+set -u
+
 TEST_PATH=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 BIN_PATH="${TEST_PATH}/../bin"
 
@@ -10,17 +11,17 @@ buildCommandInto(){
     local filename=$2
     local lang=$3
     local configFile=$4
-    
+
     local COMMAND
     if [ "$lang" == "java" ]; then
         COMMAND="jbang ${BIN_PATH}/xmlformat.${lang}"
     else
         COMMAND="${BIN_PATH}/xmlformat.${lang}"
     fi
-    
+
     local EXTRAS
     [ -n "$configFile" ] && EXTRAS=" -f ${configFile}"
-    
+
     eval "${INTO}=\"$COMMAND $EXTRAS $filename\""
 }
 
@@ -34,10 +35,9 @@ assertEqualsDiffCommandVsFile() {
 }
 
 assertEqualsDiffCommandVsCommand() {
-    #  TODO: USE BUILT COMMANDS
     local CMD1="$1"
     local CMD2="$2"
-    
+
     local output
     echo Diffing \"$CMD1\" vs \"$CMD2\"
 
@@ -61,7 +61,7 @@ assertEqualsMultipleCommandsVsCommand(){
             local CMDB
             buildCommandInto CMDB "$XML_FILE" "${langs[j]}" "$configFile"
 
-            assertEqualsDiffCommandVsCommand "$CMDA" "$CMDB" 
+            assertEqualsDiffCommandVsCommand "$CMDA" "$CMDB"
 
         done
     done
@@ -72,11 +72,12 @@ assertEqualsMultipleCommandsVsFile(){
     local configFile="$2"
     local langs
     IFS=" " read -r -a langs <<< "$3"
+    local formattedFile="${4:-${XML_FILE}.formatted}"
 
     for i in "${langs[@]}"; do
         local CMD
         buildCommandInto CMD "$XML_FILE" "$i" "$configFile"
-        assertEqualsDiffCommandVsFile "$CMD" "${XML_FILE}.formatted" || exit 1;
+        assertEqualsDiffCommandVsFile "$CMD" "$formattedFile" || exit 1;
     done
 }
 
@@ -118,25 +119,45 @@ test_big_file(){
     # TODO
 #}
 
+# Config
+
 # Test 0: no-config source defined -> default config
-test_no_confg_source() {
-   pushd config/folder_without_config || fail "$@"
-   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java"
+test_config_default() {
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java" "test_base.xml.formatted"
+}
+
+# Test 2: local over default config
+test_config_local() {
+   pushd test_base || fail "$@"
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java"  "test_base.local.xml.formatted"
    popd || fail "$@"
 }
 
-# Test 1: Parameter over default config
+# Test 3: XDG_CONFIG_HOME over local config and default config
+test_config_xdg() {
+   pushd test_base || fail "$@"
+   export XDG_CONFIG_HOME=test_base.length.conf
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java" "test_base.lenght.xml.formatted"
+   unset XDG_CONFIG_HOME
+   popd || fail "$@"
+}
 
-# Test 2: local over parameter and default config
+# Test 4: XMLFORMAT_CONF over XDG_CONFIG_HOME, local and default config
+test_config_env() {
+   pushd test_base || fail "$@"
+   export XDG_CONFIG_HOME=test_base.length.conf
+   export XMLFORMAT_CONF=test_base.sentence.conf
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "" "pl rb java" "test_base.sentence.xml.formatted"
+   unset XDG_CONFIG_HOME
+   popd || fail "$@"
+}
 
-# Test 3: XDG_CONFIG_HOME over local config, parameter and default config
-
-# Test 4: XMLFORMAT_CONF over XDG_CONFIG_HOME, local, parameter and default config
-
-
-
-# Source test sub-modules
-source config/test.sh
+# Test 1: Parameter over everything else
+test_config_param() {
+   pushd test_base || fail "$@"
+   assertEqualsMultipleCommandsVsFile "test_base.xml" "test_base.length.conf" "pl rb java" "test_base.lenght.xml.formatted"
+   popd || fail "$@"
+}
 
 # shellcheck source=shunit2
 . ./shunit2

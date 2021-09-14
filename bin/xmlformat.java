@@ -176,7 +176,7 @@ public class xmlformat {
         // be overridden in the configuration file, but the options must also be
         // built in to make sure they exist if not specified in the configuration
         // file.  Each of the structures must have a value for every option.
-    
+
         // Options for top-level document children.
         // - Do not change entry-break: 0 ensures no extra newlines before
         //   first element of output.
@@ -184,7 +184,7 @@ public class xmlformat {
         //   of output document.
         // - It's probably best not to change any of the others, except perhaps
         //   if you want to increase the element-break.
-    
+
         elt_opts.put("*DOCUMENT", new Options(
             "block",
             false,
@@ -198,7 +198,7 @@ public class xmlformat {
 
         // Default options. These are used for any elements in the document
         // that are not specified explicitly in the configuration file.
-      
+
         elt_opts.put("*DEFAULT", new Options(
             "block",
             false,
@@ -212,7 +212,7 @@ public class xmlformat {
 
         // Run the *DOCUMENT and *DEFAULT options through the option-checker
         // to verify that the built-in values are legal.
-      
+
         int _err_count = 0;
 
         for (Map.Entry<String,Options> entry: elt_opts.entrySet()){
@@ -653,7 +653,7 @@ public class xmlformat {
                 .results().map(mr->mr.group())
                 .collect(Collectors.toList());
     }
-    
+
   // ----------------------------------------------------------------------
 
   // Extract a tag name from a tag and return it. This uses a subset
@@ -708,7 +708,7 @@ public class xmlformat {
 
         return err_count;
      }
-    
+
   // ----------------------------------------------------------------------
 
   // Helper routine to print tag stack for tokens_to_tree
@@ -824,7 +824,7 @@ public class xmlformat {
         tree = children;
         return err_count;
     }
-    
+
     // Node-generating helper methods for tokens_to_tree
 
     // Generic node generator
@@ -1343,7 +1343,7 @@ public class xmlformat {
     // max_len - maximum length of output lines (including indent)
 
     List<String> line_wrap(List<String> strs, int first_indent, int rest_indent, WRAP_TYPE wrap_type, int max_len) {
-    
+
         // First, tokenize the strings
         List<String> words = new ArrayList<>();
         for(var str:strs){
@@ -1436,7 +1436,7 @@ public class xmlformat {
             llen += white.length() + wlen;
             white = new StringBuilder();
         }
-  
+
         // push remaining line, if any
         if (!line.isEmpty()) lines.add(line);
 
@@ -1581,7 +1581,7 @@ public class xmlformat {
         var xf = new xmlformat();
 
         var env_conf_file = System.getenv("XMLFORMAT_CONF");
-        var xdg_conf_file = System.getenv("XDG_CONFIG_HOME")!=null?System.getenv("XDG_CONFIG_HOME")+"/xmlformat.conf":null;
+        var xdg_conf_file = System.getenv("XDG_CONFIG_HOME");
         var pwd_conf_file = "./xmlformat.conf";
 
         // If a config file was named, we must use it as the config file.
@@ -1596,16 +1596,16 @@ public class xmlformat {
             xf.read_config(arg_conf_file);
            // Config source priority 1) $XMLFORMAT_CONF env_var
         } else if (try_config_file(xf,env_conf_file)) {
-            warn("Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file);
+            if (verbose) warn("Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file);
         // Config source priority 2) $XDG_CONFIG_HOME env_var folder
         } else if (try_config_file(xf,xdg_conf_file)) {
-            warn("Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file);
+            if (verbose) warn("Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file);
         // Config source priority 3) current folder
         } else if (try_config_file(xf,pwd_conf_file)) {
-            warn("Using configuration from current directory: " + pwd_conf_file);
+            if (verbose) warn("Using configuration from current directory: " + pwd_conf_file);
         // Config source priority 4) Defaults
         } else {
-            warn("No configuration file found. Using defaults");
+            if (verbose) warn("No configuration file found. Using defaults");
         }
 
 
@@ -1764,4 +1764,3 @@ interface TriFunction<T, U, V, R> {
         return (T t, U u, V v) -> after.apply(apply(t, u, v));
     }
 }
-
