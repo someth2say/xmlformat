@@ -35,7 +35,6 @@ assertEqualsDiffCommandVsFile() {
 }
 
 assertEqualsDiffCommandVsCommand() {
-    #  TODO: USE BUILT COMMANDS
     local CMD1="$1"
     local CMD2="$2"
 

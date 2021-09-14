@@ -1527,16 +1527,16 @@ if !arg_conf_file.nil?
   xf.read_config(arg_conf_file)
 # Config source priority 1) $XMLFORMAT_CONF env_var
 elsif try_config_file(xf, env_conf_file)
-  warn "Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file;
+  warn "Using configuration from environment variable XMLFORMAT_CONF: " + env_conf_file if verbose
 # Config source priority 2) $XDG_CONFIG_HOME env_var folder
 elsif try_config_file(xf, xdg_conf_file)
-  warn "Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file;
+  warn "Using configuration from environment variable XDG_CONFIG_HOME: " + xdg_conf_file if verbose
 # Config source priority 3) current folder
 elsif try_config_file(xf, pwd_conf_file)
-  warn "Using configuration from current directory: " + pwd_conf_file;
+  warn "Using configuration from current directory: " + pwd_conf_file if verbose
 # Config source priority 4) Defaults
 else
-  warn "No configuration file found. Using defaults";
+  warn "No configuration file found. Using defaults" if verbose
 end
 
 if show_conf        # show configuration and exit
