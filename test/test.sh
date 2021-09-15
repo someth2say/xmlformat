@@ -14,7 +14,7 @@ buildCommandInto(){
 
     local COMMAND
     if [ "$lang" == "java" ]; then
-        COMMAND="jbang ${BIN_PATH}/xmlformat.${lang}"
+        COMMAND="${BIN_PATH}/jbang ${BIN_PATH}/xmlformat.${lang}"
     else
         COMMAND="${BIN_PATH}/xmlformat.${lang}"
     fi
