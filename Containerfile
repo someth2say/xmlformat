@@ -29,15 +29,15 @@ LABEL \
     version="1.9" \
     License="GPLv3+" \
     vendor="" \
-    description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
-    summary="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
+    description="Container image wrapping XML formatter by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
+    summary="Container image wrapping XML formatter by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
     org.label-schema.name="XMLFormat" \
-    org.label-schema.description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
+    org.label-schema.description="Container image wrapping XML formatter by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
     org.label-schema.url="https://github.com/someth2say/xmlformat" \
     org.label-schema.vcs-url="https://github.com/someth2say/xmlformat" \
     org.label-schema.vcs-ref="" \
     org.label-schema.schema-version="1.0" \
-    io.k8s.description="Container image wrapping XML formater by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
+    io.k8s.description="Container image wrapping XML formatter by Kitebird (http://www.kitebird.com/software/xmlformat/)" \
     io.k8s.display-name="XMLFormat" \
     io.openshift.tags="xml format perl ruby"
 
