@@ -1,21 +1,32 @@
-name: Update README with Contributors
+name: All Contributors
 
 on:
   push:
     paths:
       - .all-contributorsrc
+  workflow_dispatch:
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
       - name: Install All Contributors CLI
-        run: |
-          npm install -g all-contributors-cli
+        run: npm install -g all-contributors-cli
 
       - name: Update README
+        run: all-contributors generate
+
+      - name: Commit and push changes
         run: |
-          all-contributors generate
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add README.md .all-contributorsrc
+          git diff --quiet && git diff --staged --quiet || (git commit -m "docs: update contributors" && git push)
