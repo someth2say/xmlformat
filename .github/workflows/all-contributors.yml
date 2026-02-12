@@ -1,0 +1,21 @@
+name: Update README with Contributors
+
+on:
+  push:
+    paths:
+      - .all-contributorsrc
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install All Contributors CLI
+        run: |
+          npm install -g all-contributors-cli
+
+      - name: Update README
+        run: |
+          all-contributors generate
